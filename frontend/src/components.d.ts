@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AnimatedOwl: typeof import('./components/AnimatedOwl.vue')['default']
     AppHeader: typeof import('./components/layout/AppHeader.vue')['default']
     Avatar: typeof import('./volt/Avatar.vue')['default']
     Badge: typeof import('./volt/Badge.vue')['default']
@@ -59,9 +60,14 @@ declare module 'vue' {
     MembershipsTable: typeof import('./components/memberships/MembershipsTable.vue')['default']
     Menu: typeof import('./volt/Menu.vue')['default']
     Message: typeof import('./volt/Message.vue')['default']
+    MobileHeader: typeof import('./components/layout/MobileHeader.vue')['default']
+    MobileLayout: typeof import('./components/layout/MobileLayout.vue')['default']
+    MobileMenu: typeof import('./components/layout/MobileMenu.vue')['default']
+    MobileToast: typeof import('./components/layout/MobileToast.vue')['default']
     MonthlyDetailsDialog: typeof import('./components/financial/MonthlyDetailsDialog.vue')['default']
     MonthlyOverview: typeof import('./components/financial/MonthlyOverview.vue')['default']
     MultiSelect: typeof import('./volt/MultiSelect.vue')['default']
+    NavigationFooter: typeof import('./components/layout/NavigationFooter.vue')['default']
     OverlayBadge: typeof import('./volt/OverlayBadge.vue')['default']
     PreviewDialog: typeof import('./components/financial/planning/dialogs/PreviewDialog.vue')['default']
     ProfitabilityTable: typeof import('./components/financial/investor-kpis/components/ProfitabilityTable.vue')['default']

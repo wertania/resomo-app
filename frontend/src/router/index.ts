@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import DefaultLayout from '../components/layout/Default.vue'
+import MobileLayout from '../components/layout/MobileLayout.vue'
 
 // Check if Hanko authentication is enabled
 const isHankoEnabled = !!import.meta.env.VITE_HANKO_API_URL
@@ -18,6 +19,62 @@ const router = createRouter({
       name: 'Profile',
       component: () => import('../views/auth/profile.vue'),
       meta: { requiresAuth: true },
+    },
+
+    // Mobile Layout Routes
+    {
+      path: '/mobile',
+      component: MobileLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'MobileHome',
+          component: () => import('../views/mobile/Home.vue'),
+          meta: { headerTitle: 'Resomo' },
+        },
+        {
+          path: 'recording',
+          name: 'MobileRecording',
+          component: () => import('../views/mobile/Recording.vue'),
+          meta: { headerTitle: 'KI-Assistent' },
+        },
+        {
+          path: 'chat',
+          name: 'MobileChat',
+          component: () => import('../views/mobile/Chat.vue'),
+          meta: { headerTitle: 'KI-Assistent' },
+        },
+        {
+          path: 'archive',
+          name: 'MobileArchive',
+          component: () => import('../views/mobile/Archive.vue'),
+          meta: { headerTitle: 'Aufnahmenarchiv' },
+        },
+        {
+          path: 'archive-entry',
+          name: 'MobileArchiveEntry',
+          component: () => import('../views/mobile/ArchiveEntry.vue'),
+        },
+        {
+          path: 'familiy-tree',
+          name: 'MobileFamilyTree',
+          component: () => import('../views/mobile/FamilyTree.vue'),
+          meta: { headerTitle: 'Familienbaum' },
+        },
+        {
+          path: 'photobook',
+          name: 'MobilePhotobook',
+          component: () => import('../views/mobile/Photobook.vue'),
+          meta: { headerTitle: 'Fotobuch' },
+        },
+        {
+          path: 'account',
+          name: 'MobileAccount',
+          component: () => import('../views/mobile/Account.vue'),
+          meta: { headerTitle: 'Resomo' },
+        },
+      ],
     },
 
     // Home

@@ -72,8 +72,10 @@ declare global {
   const triggerRef: typeof import('vue').triggerRef
   const unref: typeof import('vue').unref
   const useApp: typeof import('./stores/main').useApp
+  const useArchiveStore: typeof import('./stores/archive').useArchiveStore
   const useAttrs: typeof import('vue').useAttrs
   const useAuthStore: typeof import('./stores/authStore').useAuthStore
+  const useChatStore: typeof import('./stores/chat').useChatStore
   const useCssModule: typeof import('vue').useCssModule
   const useCssVars: typeof import('vue').useCssVars
   const useI18n: typeof import('vue-i18n').useI18n
@@ -84,7 +86,9 @@ declare global {
   const useKnowledgeTextsStore: typeof import('./stores/knowledgeTexts').useKnowledgeTextsStore
   const useLink: typeof import('vue-router').useLink
   const useModel: typeof import('vue').useModel
+  const useNotificationStore: typeof import('./stores/notifications').useNotificationStore
   const useNotificationsStore: typeof import('./stores/notifications').useNotificationsStore
+  const useRecordingStore: typeof import('./stores/recording').useRecordingStore
   const useRoute: typeof import('vue-router').useRoute
   const useRouter: typeof import('vue-router').useRouter
   const useSettingsStore: typeof import('./stores/settings').useSettingsStore
@@ -101,17 +105,20 @@ declare global {
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
+  export type { ArchiveEntry } from './stores/archive'
+  import('./stores/archive')
+  // @ts-ignore
+  export type { Role, ChatMessage } from './stores/chat'
+  import('./stores/chat')
+  // @ts-ignore
   export type { KnowledgeText, KnowledgeTextInsert, KnowledgeTextUpdate } from './stores/knowledgeTexts'
   import('./stores/knowledgeTexts')
   // @ts-ignore
   export type { Team } from './stores/main'
   import('./stores/main')
   // @ts-ignore
-  export type { Competitor, CompetitorFormData } from './types/competitors'
-  import('./types/competitors')
-  // @ts-ignore
-  export type { ScenarioMode, ScenarioType, FinancialEntry, GraduatedEntry, GraduatedValue, Salary, EmployeeBasedExpense, Investment, FinancialCategory, FinancialTag } from './types/financial'
-  import('./types/financial')
+  export type { Notification } from './stores/notifications'
+  import('./stores/notifications')
   // @ts-ignore
   export type { KnowledgeChunk } from './types/knowledge-chunk'
   import('./types/knowledge-chunk')
@@ -121,10 +128,4 @@ declare global {
   // @ts-ignore
   export type { KnowledgeGroup, KnowledgeGroupTeam } from './types/knowledgeGroup'
   import('./types/knowledgeGroup')
-  // @ts-ignore
-  export type { Membership, MembershipFormData } from './types/memberships'
-  import('./types/memberships')
-  // @ts-ignore
-  export type { RoadmapType, RoadmapEntry, RoadmapEntryFormData } from './types/roadmap'
-  import('./types/roadmap')
 }
