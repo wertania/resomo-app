@@ -98,7 +98,6 @@
           </div>
         </div>
       </template>
-    </div>
   </div>
 </template>
 
@@ -198,7 +197,7 @@ watch(
   { immediate: true },
 )
 
-onDestroy(() => {
+onUnmounted(() => {
   if (audioUrl.value) URL.revokeObjectURL(audioUrl.value)
 })
 </script>
