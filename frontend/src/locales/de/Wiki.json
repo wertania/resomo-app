@@ -1,0 +1,21 @@
+{
+  "title": "Wiki",
+  "noEntries": "Noch keine Einträge",
+  "selectEntry": "Wählen Sie einen Eintrag zum Anzeigen oder Bearbeiten",
+  "loadingContent": "Inhalt wird geladen...",
+  "titlePlaceholder": "Titel eingeben...",
+  "contentPlaceholder": "Beginnen Sie zu schreiben...",
+  "addChild": "Untereintrag hinzufügen",
+  "delete": "Löschen",
+  "confirmDelete": "Sind Sie sicher, dass Sie diesen Eintrag löschen möchten? Alle Untereinträge werden ebenfalls gelöscht.",
+  "confirmDeleteHeader": "Löschen bestätigen",
+  "errorFetchingTexts": "Fehler beim Laden der Wiki-Einträge",
+  "errorFetchingText": "Fehler beim Laden des Wiki-Eintrags",
+  "textCreated": "Wiki-Eintrag erstellt",
+  "errorCreatingText": "Fehler beim Erstellen des Wiki-Eintrags",
+  "textUpdated": "Wiki-Eintrag aktualisiert",
+  "errorUpdatingText": "Fehler beim Aktualisieren des Wiki-Eintrags",
+  "textDeleted": "Wiki-Eintrag gelöscht",
+  "errorDeletingText": "Fehler beim Löschen des Wiki-Eintrags"
+}
+

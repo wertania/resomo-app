@@ -1,0 +1,17 @@
+{
+  "title": "Benutzerprofil",
+  "personalInfo": "Persönliche Informationen",
+  "firstname": "Vorname",
+  "surname": "Nachname",
+  "updateButton": "Profil aktualisieren",
+  "imageAlt": "Profilbild",
+  "changeImage": "Bild ändern",
+  "dropzoneText": "Bild hier ablegen oder klicken zum Auswählen",
+  "security": "Sicherheit",
+  "securityDescription": "Verwalten Sie Ihre Sicherheitseinstellungen",
+  "fetchError": "Fehler beim Laden des Profils",
+  "updateSuccess": "Profil erfolgreich aktualisiert",
+  "updateError": "Fehler beim Aktualisieren des Profils",
+  "imageUploadSuccess": "Profilbild erfolgreich hochgeladen",
+  "imageUploadError": "Fehler beim Hochladen des Profilbilds"
+}

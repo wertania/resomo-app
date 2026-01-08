@@ -1,0 +1,9 @@
+{
+  "recording": "Aufnahme läuft...",
+  "transcribing": "Transkribiere...",
+  "clickToRecord": "Klicke zum Aufnehmen",
+  "result": "Transkription",
+  "microphoneError": "Mikrofon konnte nicht aktiviert werden",
+  "transcriptionError": "Transkription fehlgeschlagen"
+}
+
