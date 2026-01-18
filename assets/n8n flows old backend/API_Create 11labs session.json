@@ -1,0 +1,152 @@
+{
+  "name": "API_Create 11labs session",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "0a92fa45-caba-479c-adeb-a7fdf8df15a9",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        32
+      ],
+      "id": "6723cd07-7810-41eb-91c2-1d964eb93d0d",
+      "name": "Webhook",
+      "webhookId": "0a92fa45-caba-479c-adeb-a7fdf8df15a9"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const agentId = \"agent_9901k3tqkh0ffacbxj0wcst7cph1\";\n\nreturn {\n  url:\n    \"https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=\" +\n    agentId,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        32
+      ],
+      "id": "cdfe0b58-a5fe-4206-8d5b-a840ec9e1014",
+      "name": "URL"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        32
+      ],
+      "id": "1c281090-6239-4ea5-9f93-f839dec74a2a",
+      "name": "Create session",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "YReE8cZXUu4MjmiM",
+          "name": "Header Auth 11labs"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        32
+      ],
+      "id": "1cb5ed7c-77ca-4200-8dd2-5433fd1b30d3",
+      "name": "Return WSS"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-julia.perlecto.de",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "de-DE,de;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,fr;q=0.5,it;q=0.4,mt;q=0.3,pl;q=0.2",
+            "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2BpqUL7vwuaBHsZJKzfOwMTGZKLqSe%2BVp7hbbRYuAHmE6lh3i8wk4d0; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX1%2FDISsfx%2BkRsY3j%2FUiH8gPH%2BgxoOnogkrN2msur14FJGJ%2BD%2FEbyuHXF; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX19a1uVfqiPIlz%2FvAq5nlBgdcpld6er5Pn5vBrR3tVryyaMxNh1NOJH45E%2FJ07FFiZNwIieNN7TU4A%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX18wGsxAVRJ4IsWN%2B%2B5HVlS9v4LIKH%2B73asB5Mds%2BtFH2YI7RA3VgR2lecr9NcWc6m7F7%2FlscJN6RUoY2fh5tFZ7MCgyBUJxQrvziszxv1j8eyzYQQScP5HsSEpAPv7PqCBSoNOMPnmwiAq9k3JAZCzimBOeFFTPwB4%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX18tCC9wj1IRVC%2FEzBPlLuBZGMpgA5y2VBWhqSeuj7V6B4ao4G9tTGMb%2Fp60qVRvWZZOuxDRZqm7Bz5jWhM36qgmb9xhL4PHCXxwmdxn2yK%2BAbdGkpb%2F3A8N9CYrxaGC1BfNiOZ29I02gg%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%2241f237597f6e9fc7dfc2966393477343d9e44f839204e5457640dd35995b4277%2334e79ede-ccba-4b46-a131-80c581d8e700%22%2C%22%24sesid%22%3A%5B1756491755677%2C%220198f70e-1b6b-77cd-b298-e83b62faccdb%22%2C1756491553643%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22https%3A%2F%2Fcoolify.perlecto.de%2F%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.perlecto.de%2Fsetup%22%7D%7D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2FGquToXsltJQe52oYeKz6poxEFFldnTcWzm01usqA%2B6avgAAMaKt%2BxAhlNmCENwKRg4yMuPYtoGmceCr2IRWoyDSUyq6957QfIi9nCKZmBHAfya0x%2BSA1Fl6%2BZW6lQXPzuQsGNDCOvzA%3D%3D",
+            "if-none-match": "W/\"a5-VS6KC58LqNpwzOX94OEQuoVYpBw\"",
+            "priority": "u=0, i",
+            "sec-ch-ua": "\"Not;A=Brand\";v=\"99\", \"Microsoft Edge\";v=\"139\", \"Chromium\";v=\"139\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "none",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1",
+            "x-forwarded-for": "79.247.22.97",
+            "x-forwarded-host": "n8n-julia.perlecto.de",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "f6d0fc36d827",
+            "x-real-ip": "79.247.22.97"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "https://n8n-julia.perlecto.de/webhook-test/0a92fa45-caba-479c-adeb-a7fdf8df15a9",
+          "executionMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL": {
+      "main": [
+        [
+          {
+            "node": "Create session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create session": {
+      "main": [
+        [
+          {
+            "node": "Return WSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1c855b89-ff70-4195-90b4-583806ddce1b",
+  "meta": {
+    "instanceId": "41f237597f6e9fc7dfc2966393477343d9e44f839204e5457640dd35995b4277"
+  },
+  "id": "Ynyq5bqQAn2M8dlB",
+  "tags": []
+}

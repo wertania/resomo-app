@@ -1,0 +1,1268 @@
+{
+  "name": "API_Transcript endpoints",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1456,
+        0
+      ],
+      "id": "31d64f6f-2010-4225-b36e-c130763b1518",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "827175b7-b799-4ebd-8ab7-0420185b4021",
+              "leftValue": "={{ $json.query.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        112
+      ],
+      "id": "5f565e89-ce52-431a-97f7-ea8ae69cafa7",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"No given id.\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        816,
+        224
+      ],
+      "id": "8d280749-0afb-4a64-99d0-f8f52fe988cf",
+      "name": "No ID"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "transcripts",
+          "mode": "list",
+          "cachedResultName": "transcripts"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $json.query.id }}"
+            },
+            {
+              "column": "user_uuid",
+              "value": "={{ $json.headers['x-user-session-id'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        816,
+        0
+      ],
+      "id": "b85dfa00-0433-4594-b389-06b8d9f1e166",
+      "name": "Get entry by id",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fe60b120-20b4-4fb1-91ab-d6a2b1afb974",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "c7237a4d-2a4e-4ead-a507-8b2e2415c812",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"The given id was not found.\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1456,
+        176
+      ],
+      "id": "48cc1096-0e70-4564-a92a-c7fe1f44892f",
+      "name": "ID not found"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1040,
+        464
+      ],
+      "id": "00fa18ad-9193-4ec4-9baa-87792eb77a0b",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "827175b7-b799-4ebd-8ab7-0420185b4021",
+              "leftValue": "={{ $json.query.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        576
+      ],
+      "id": "ad5fecae-0a31-4d82-9ce3-e48134a6be15",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"No given id.\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        800,
+        688
+      ],
+      "id": "f97d393f-fcd0-4928-89b7-84950c12ecfd",
+      "name": "No ID1"
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "transcripts",
+          "mode": "list",
+          "cachedResultName": "transcripts"
+        },
+        "deleteCommand": "delete",
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $json.query.id }}"
+            },
+            {
+              "column": "user_uuid",
+              "value": "={{ $json.headers['x-user-session-id'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        800,
+        464
+      ],
+      "id": "c971c389-fd18-45bd-8cab-1f0c7699fc70",
+      "name": "Get entry by id1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "transcripts",
+          "mode": "list",
+          "cachedResultName": "transcripts"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "user_uuid",
+              "value": "={{ $json.headers['x-user-session-id'] }}"
+            }
+          ]
+        },
+        "options": {
+          "outputColumns": [
+            "id",
+            "session_name",
+            "created_at"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        592,
+        -384
+      ],
+      "id": "de25e9b3-00e0-4db6-bbb9-83a63582e534",
+      "name": "Get all entries",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1456,
+        -464
+      ],
+      "id": "3554724e-2dc1-41bd-a40c-1ba4bff8c9bf",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "827175b7-b799-4ebd-8ab7-0420185b4021",
+              "leftValue": "={{ $json.body.session_name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c6bd7c62-e28b-4a66-9ccc-01e87aa52d03",
+              "leftValue": "={{ $json.body.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        1056
+      ],
+      "id": "57064c5d-ce58-4df1-abd5-15d5e22fd78a",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"No given id.\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        672,
+        1168
+      ],
+      "id": "0f9f4649-dc5b-4ec5-bef3-caf92d14f592",
+      "name": "No ID2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        912,
+        944
+      ],
+      "id": "9cc40cb7-bf08-4743-a49b-99cad4b163f4",
+      "name": "Update was succesfull"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Beispiel: Wandelt ein Buffer-Objekt in einen Base64-String um\n\nconst fileBuffer = Buffer.from($json.file.data);\n\n// Konvertieren in Base64\nconst base64String = fileBuffer.toString(\"base64\");\n\nreturn {\n  ...$json,\n  fileBase64: base64String,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "a74c9323-3566-40ef-a7ed-8a80a4121130",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "path": "3954b798-8ce6-41d7-96f3-1f3266e0955c/all",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -48,
+        -384
+      ],
+      "id": "90fbf54b-8c58-47a6-b24d-e791b85fc89e",
+      "name": "GET /all",
+      "webhookId": "19ffaa26-a4ac-4a71-9414-8b8155fb77a0"
+    },
+    {
+      "parameters": {
+        "path": "3954b798-8ce6-41d7-96f3-1f3266e0955c",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -48,
+        112
+      ],
+      "id": "01438c8f-aec0-4359-8b76-5048d60076ea",
+      "name": "GET",
+      "webhookId": "3954b798-8ce6-41d7-96f3-1f3266e0955c"
+    },
+    {
+      "parameters": {
+        "httpMethod": "DELETE",
+        "path": "3954b798-8ce6-41d7-96f3-1f3266e0955c",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -48,
+        576
+      ],
+      "id": "dcfe83ab-f4c5-4562-aa4f-19b757b9e845",
+      "name": "DELETE",
+      "webhookId": "f091e455-5a0e-4ce0-bc17-5e4f6782dd85"
+    },
+    {
+      "parameters": {
+        "httpMethod": "PUT",
+        "path": "3954b798-8ce6-41d7-96f3-1f3266e0955c",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -48,
+        1056
+      ],
+      "id": "0a715baa-ab8b-48a6-9cbd-997404f77da6",
+      "name": "PUT",
+      "webhookId": "3954b798-8ce6-41d7-96f3-1f3266e0955c"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f84448d4-8d56-46b1-a460-116e68de7015",
+              "leftValue": "={{ $json.headers['x-user-session-id'] }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        -384
+      ],
+      "id": "7f4eae7e-7f8c-4135-9be0-b10d3936f94a",
+      "name": "Check User Session 1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"x-usersession-id missing\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        368,
+        -176
+      ],
+      "id": "c94b14e8-6baa-4b93-b213-67b384c6b15b",
+      "name": "x-usersession-id missing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f84448d4-8d56-46b1-a460-116e68de7015",
+              "leftValue": "={{ $json.headers['x-user-session-id'] }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        112
+      ],
+      "id": "42208e7b-4ac9-453b-870e-e70df7483892",
+      "name": "Check User Session "
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f84448d4-8d56-46b1-a460-116e68de7015",
+              "leftValue": "={{ $json.headers['x-user-session-id'] }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        576
+      ],
+      "id": "345450dc-cc79-44a7-b167-b4311e3edca2",
+      "name": "Check User Session 2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f84448d4-8d56-46b1-a460-116e68de7015",
+              "leftValue": "={{ $json.headers['x-user-session-id'] }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        144,
+        1056
+      ],
+      "id": "555aea44-acae-4bea-9471-e12ee7f339da",
+      "name": "Check User Session 3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7ea8f11a-a234-4343-a42b-674949316efc",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        -384
+      ],
+      "id": "de3beeb3-03d2-4650-846b-4193880c25ba",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"data\": []\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1456,
+        -304
+      ],
+      "id": "9bdc8f09-f9cf-4130-bc0e-2266b791de16",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        -464
+      ],
+      "id": "54e796a5-bd10-4cac-a62c-ceca1796315f",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "transcripts",
+          "mode": "list",
+          "cachedResultName": "transcripts"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.body.id }}",
+            "session_name": "={{ $json.body.session_name }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "author",
+              "displayName": "author",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "meta",
+              "displayName": "meta",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "file",
+              "displayName": "file",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "elevenlabs_conversation_id",
+              "displayName": "elevenlabs_conversation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session_name",
+              "displayName": "session_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "outputColumns": [
+            "id"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        944
+      ],
+      "id": "a28da59f-9a7c-482e-99d6-8de727b3426d",
+      "name": "Update entry by id",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "GET": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-julia.perlecto.de",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "de-DE,de;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,fr;q=0.5,it;q=0.4,mt;q=0.3,pl;q=0.2",
+            "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2BpqUL7vwuaBHsZJKzfOwMTGZKLqSe%2BVp7hbbRYuAHmE6lh3i8wk4d0; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX1%2FDISsfx%2BkRsY3j%2FUiH8gPH%2BgxoOnogkrN2msur14FJGJ%2BD%2FEbyuHXF; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX19nVfsKW4bP3Fj26CQKopu%2FSn65SFmM%2F1jiX1dbHrtCtrG9MGuRhdOU3afgxLxxdLu91t%2FwfSwLAw%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2BRn%2BThVVheHqXGLsCPuZvFXHpBavSuSz%2BwdmmslsRQwOLgmb%2F9PAwuPxJWXflNedTFv8Ryq9e8r2psszHDBup0YrYXKjqroG%2F2iPaCi6tnzUlo8kn8NX6%2B3BZUW9svj8rI7oNcOw7ly7tKfqREBWKHL7oeU%2FYCtGE%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2B0cKFY0CuUEaGRuWmtQgQ7ElwZSSh3PNWaq20F5DTshOgLIAo8qZ%2FXxq1eUeZ4ioJjdHqLpUHgl73qIQAqAUkpFyQJmvb%2BPwn4iis%2Fa83t9RZsDzRdxXby4m9cvpNwKnZoNvXWlvC7TA%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%2241f237597f6e9fc7dfc2966393477343d9e44f839204e5457640dd35995b4277%2334e79ede-ccba-4b46-a131-80c581d8e700%22%2C%22%24sesid%22%3A%5Bnull%2C%220198f681-8c95-707b-8a80-fcea6c98ada3%22%2C1756482342037%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22https%3A%2F%2Fcoolify.perlecto.de%2F%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.perlecto.de%2Fsetup%22%7D%7D; rl_session=RudderEncrypt%3AU2FsdGVkX19ulgmawvMaswCfjuMr%2BcWbrZRbIgyly%2BrgnP9Q0MVZRDnyJFGpBBLv774jv2Yv%2FSzAXffwimzdreFQPYMU%2BHaRelEhQLwy8GQitTqidh4klkAlrE4Vtgg9moR1qywgsLeMPva4hQrk5A%3D%3D",
+            "priority": "u=0, i",
+            "sec-ch-ua": "\"Not;A=Brand\";v=\"99\", \"Microsoft Edge\";v=\"139\", \"Chromium\";v=\"139\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "none",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1",
+            "x-forwarded-for": "79.247.22.97",
+            "x-forwarded-host": "n8n-julia.perlecto.de",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "f6d0fc36d827",
+            "x-real-ip": "79.247.22.97",
+            "x-user-session-id": "056bbb62-225c-409e-8343-531a6c15ac85"
+          },
+          "params": {},
+          "query": {
+            "id": "1"
+          },
+          "body": {},
+          "webhookUrl": "https://n8n-julia.perlecto.de/webhook-test/3954b798-8ce6-41d7-96f3-1f3266e0955c",
+          "executionMode": "test"
+        }
+      }
+    ],
+    "GET /all": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-julia.perlecto.de",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "de-DE,de;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,fr;q=0.5,it;q=0.4,mt;q=0.3,pl;q=0.2",
+            "if-none-match": "W/\"12b-uiHxpAES2wAKlcvL+9gM42DuOUI\"",
+            "origin": "http://localhost:5173",
+            "priority": "u=1, i",
+            "referer": "http://localhost:5173/",
+            "sec-ch-ua": "\"Not;A=Brand\";v=\"99\", \"Microsoft Edge\";v=\"139\", \"Chromium\";v=\"139\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "79.247.22.97",
+            "x-forwarded-host": "n8n-julia.perlecto.de",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "f6d0fc36d827",
+            "x-real-ip": "79.247.22.97",
+            "x-user-session-id": "056bbb62-225c-409e-8343-531a6c15ac85"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "https://n8n-julia.perlecto.de/webhook/3954b798-8ce6-41d7-96f3-1f3266e0955c/all",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "DELETE": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-julia.perlecto.de",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "de-DE,de;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,fr;q=0.5,it;q=0.4,mt;q=0.3,pl;q=0.2",
+            "origin": "http://localhost:5173",
+            "priority": "u=1, i",
+            "referer": "http://localhost:5173/",
+            "sec-ch-ua": "\"Not;A=Brand\";v=\"99\", \"Microsoft Edge\";v=\"139\", \"Chromium\";v=\"139\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "79.247.22.97",
+            "x-forwarded-host": "n8n-julia.perlecto.de",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "f6d0fc36d827",
+            "x-real-ip": "79.247.22.97",
+            "x-user-session-id": "056bbb62-225c-409e-8343-531a6c15ac85"
+          },
+          "params": {},
+          "query": {
+            "id": "1"
+          },
+          "body": {},
+          "webhookUrl": "https://n8n-julia.perlecto.de/webhook/3954b798-8ce6-41d7-96f3-1f3266e0955c",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "PUT": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-julia.perlecto.de",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0",
+            "content-length": "34",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "de-DE,de;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,fr;q=0.5,it;q=0.4,mt;q=0.3,pl;q=0.2",
+            "content-type": "application/json",
+            "origin": "http://localhost:5173",
+            "priority": "u=1, i",
+            "referer": "http://localhost:5173/",
+            "sec-ch-ua": "\"Not;A=Brand\";v=\"99\", \"Microsoft Edge\";v=\"139\", \"Chromium\";v=\"139\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "79.247.22.97",
+            "x-forwarded-host": "n8n-julia.perlecto.de",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "f6d0fc36d827",
+            "x-real-ip": "79.247.22.97",
+            "x-user-session-id": "056bbb62-225c-409e-8343-531a6c15ac85"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "id": 18,
+            "session_name": "julia 1"
+          },
+          "webhookUrl": "https://n8n-julia.perlecto.de/webhook/3954b798-8ce6-41d7-96f3-1f3266e0955c",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get entry by id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get entry by id": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ID not found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Get entry by id1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No ID1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get entry by id1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all entries": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Update entry by id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No ID2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /all": {
+      "main": [
+        [
+          {
+            "node": "Check User Session 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET": {
+      "main": [
+        [
+          {
+            "node": "Check User Session ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE": {
+      "main": [
+        [
+          {
+            "node": "Check User Session 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PUT": {
+      "main": [
+        [
+          {
+            "node": "Check User Session 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check User Session 1": {
+      "main": [
+        [
+          {
+            "node": "Get all entries",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "x-usersession-id missing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check User Session ": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "x-usersession-id missing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check User Session 2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "x-usersession-id missing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check User Session 3": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "x-usersession-id missing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update entry by id": {
+      "main": [
+        [
+          {
+            "node": "Update was succesfull",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1a359a5d-3bdf-42cc-a100-45a98569dca9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "41f237597f6e9fc7dfc2966393477343d9e44f839204e5457640dd35995b4277"
+  },
+  "id": "ocWmQ30wgNgXXVLy",
+  "tags": []
+}

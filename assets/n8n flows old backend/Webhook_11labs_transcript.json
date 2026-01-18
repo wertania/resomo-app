@@ -1,0 +1,957 @@
+{
+  "name": "Webhook_11labs_transcript",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## \n\nwsec_e1757a1e7f0bcc6daaf989125e3a2901d750893e7c4c6c4965de9cc53b39a398",
+        "height": 96,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -288
+      ],
+      "id": "28d96cd2-1417-49ec-864d-6e8f1b6155bf",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "transcripts",
+          "mode": "list",
+          "cachedResultName": "transcripts"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "author": "11labs",
+            "meta": "{}",
+            "elevenlabs_conversation_id": "={{ $json.body.data.conversation_id }}",
+            "data": "={{ $json.body.data }}",
+            "user_uuid": "={{ $json.body.data.conversation_initiation_client_data.custom_llm_extra_body.user_uuid }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "author",
+              "displayName": "author",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meta",
+              "displayName": "meta",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "file",
+              "displayName": "file",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "elevenlabs_conversation_id",
+              "displayName": "elevenlabs_conversation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "session_name",
+              "displayName": "session_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "user_uuid",
+              "displayName": "user_uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        240
+      ],
+      "id": "f5db9764-8477-410b-b831-884953fb8b09",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "eb75c8b9-c239-4228-a852-0bc58040f84c",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "f681a129-5300-4305-91a9-8b020d927738",
+      "name": "POST Webhook",
+      "webhookId": "eb75c8b9-c239-4228-a852-0bc58040f84c"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ef6f4031-3cf1-4be1-abd1-eb8653053826",
+                    "leftValue": "={{ $json.body.type }}",
+                    "rightValue": "post_call_audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.type }}",
+                    "rightValue": "post_call_transcription",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3eb7407c-d8ab-4e27-9342-0ad25db06041"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "transcription"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        96,
+        0
+      ],
+      "id": "1f9c1827-24eb-4d39-b475-4f52da9a99d6",
+      "name": "Switch type"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "body.data.full_audio",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "da410466-a0ee-4faf-9a7a-b5467e372f0f",
+      "name": "Convert B64 to audio file"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "transcripts",
+          "mode": "list",
+          "cachedResultName": "transcripts"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "elevenlabs_conversation_id",
+              "value": "={{ $('POST Webhook').first().json.body.data.conversation_id }}"
+            }
+          ]
+        },
+        "options": {
+          "outputColumns": [
+            "id"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        912,
+        -96
+      ],
+      "id": "8969a478-9b2b-43de-9ee9-473bc396ce59",
+      "name": "Search transcript",
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1152,
+        -96
+      ],
+      "id": "a648c289-7396-4a60-8929-0719733dc583",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  status: true\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        240
+      ],
+      "id": "10833497-d827-489f-98c1-7e27497e5c61",
+      "name": "Return_1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  status: true\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        -96
+      ],
+      "id": "447a07ed-66be-4617-8144-444ed03679a9",
+      "name": "Return_2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1792,
+        -96
+      ],
+      "id": "3fdb2989-414f-456e-a6c4-ae9f2644f2e8",
+      "name": "Respond to Webhook 2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1136,
+        240
+      ],
+      "id": "a6597f58-06fa-4099-b3d1-fa0518a39c1f",
+      "name": "Respond to Webhook 1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.transcripts\n  SET file = decode($1, 'base64')\n  WHERE id = {{ $('Search transcript').first().json.id }}",
+        "options": {
+          "queryReplacement": "={{ $('POST Webhook').first().json.body.data.full_audio }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1376,
+        -96
+      ],
+      "id": "e0a19272-0be8-4510-9e49-10aa1e7ebaea",
+      "name": "INSERT file",
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "userItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        592
+      ],
+      "id": "4c367bb2-f208-498e-8ffa-60a2b28f7557",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mistral.ai/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mistralCloudApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "mistral-embed"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1504,
+        592
+      ],
+      "id": "ed82c550-364b-4b49-ac10-8ed79d621d8f",
+      "name": "Create Embedding",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "LP2ML79lBIeM7Vjq",
+          "name": "Mistral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  _dbItem: $json,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        592
+      ],
+      "id": "a7aefb93-5534-48c6-b266-5c6775a75a6a",
+      "name": "Add dbItem to object"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        896,
+        592
+      ],
+      "id": "b99b2c1d-f8d8-4665-9482-69e0d55c1397",
+      "name": "Merge all keys"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const transcript = $json.body.data.transcript;\n\nlet userItems = transcript.filter((i) => i.role === \"user\");\nuserItems = userItems.map((i) => {\n  return {\n    ...i,\n    _conversation_id: $json.body.data.conversation_id,\n    _transcriptId: $json._dbItem.id,\n  };\n});\n\nreturn {\n  userItems,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        592
+      ],
+      "id": "5ff40289-bcc6-4c6a-a956-a26107f57572",
+      "name": "Filter user items"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1712,
+        592
+      ],
+      "id": "ddee892a-6d71-4f8b-9700-b312e1e788e2",
+      "name": "Merge by position"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO public.transcript_embeddings(\n\ttranscript_id, text, embedding, meta\n  )\tVALUES (\n      {{ $json._transcriptId }},\n      '{{ $json.message.replace(/'/g, \"''\") }}',\n      '[{{ $json.data[0].embedding.join(\",\") }}]',\n      to_jsonb('{{ JSON.stringify($json.meta ?? {}).replace(/'/g, \"''\") }}'::json)\n  );",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1920,
+        592
+      ],
+      "id": "4e99bf19-b2b0-4abd-bb56-622c98978f49",
+      "name": "INSERT embedding and text",
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Save audio file",
+        "height": 288,
+        "width": 1376
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        -192
+      ],
+      "id": "354b645b-ea3d-4e26-9ae2-f02c0d5e2367",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Save transcript",
+        "height": 288,
+        "width": 1376
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        144
+      ],
+      "id": "d180b02a-05b9-4618-ab5f-6b949ebb7171",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Save embeddings",
+        "height": 288,
+        "width": 1584
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        496
+      ],
+      "id": "8dc73e67-7afa-49de-be31-21146ce177be",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {
+    "POST Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-julia.perlecto.de",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "3374",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate",
+            "content-type": "application/json",
+            "elevenlabs-signature": "t=1756543534,v0=491ad5822740fd2b503c5afae1f952cc44c6b01f6e4b4b22c045c756240293fb",
+            "x-forwarded-for": "34.59.11.47",
+            "x-forwarded-host": "n8n-julia.perlecto.de",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "f6d0fc36d827",
+            "x-real-ip": "34.59.11.47"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "post_call_transcription",
+            "event_timestamp": 1756543534,
+            "data": {
+              "agent_id": "agent_9901k3tqkh0ffacbxj0wcst7cph1",
+              "conversation_id": "conv_4001k3x2e93je779x057et6q83sq",
+              "status": "done",
+              "user_id": null,
+              "transcript": [
+                {
+                  "role": "agent",
+                  "message": "Erzähl mir etwas.",
+                  "tool_calls": [],
+                  "tool_results": [],
+                  "feedback": null,
+                  "llm_override": null,
+                  "time_in_call_secs": 0,
+                  "conversation_turn_metrics": {
+                    "metrics": {
+                      "convai_tts_service_ttfb": {
+                        "elapsed_time": 0.1753974679741077
+                      }
+                    }
+                  },
+                  "rag_retrieval_info": null,
+                  "llm_usage": null,
+                  "interrupted": false,
+                  "original_message": null,
+                  "source_medium": null
+                }
+              ],
+              "metadata": {
+                "start_time_unix_secs": 1756543526,
+                "accepted_time_unix_secs": 1756543526,
+                "call_duration_secs": 6,
+                "cost": 45,
+                "deletion_settings": {
+                  "deletion_time_unix_secs": null,
+                  "deleted_logs_at_time_unix_secs": null,
+                  "deleted_audio_at_time_unix_secs": null,
+                  "deleted_transcript_at_time_unix_secs": null,
+                  "delete_transcript_and_pii": false,
+                  "delete_audio": false
+                },
+                "feedback": {
+                  "overall_score": null,
+                  "likes": 0,
+                  "dislikes": 0
+                },
+                "authorization_method": "public",
+                "charging": {
+                  "dev_discount": false,
+                  "is_burst": false,
+                  "tier": "creator",
+                  "llm_usage": {
+                    "irreversible_generation": {
+                      "model_usage": {}
+                    },
+                    "initiated_generation": {
+                      "model_usage": {}
+                    }
+                  },
+                  "llm_price": 0,
+                  "llm_charge": 0,
+                  "call_charge": 45
+                },
+                "phone_call": null,
+                "batch_call": null,
+                "termination_reason": "Client disconnected: 1005",
+                "error": null,
+                "main_language": "de",
+                "rag_usage": null,
+                "text_only": false,
+                "features_usage": {
+                  "language_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_agent": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "transfer_to_number": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "multivoice": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "dtmf_tones": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "external_mcp_servers": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "pii_zrm_workspace": false,
+                  "pii_zrm_agent": false,
+                  "tool_dynamic_variable_updates": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "is_livekit": false,
+                  "voicemail_detection": {
+                    "enabled": false,
+                    "used": false
+                  },
+                  "workflow": {
+                    "enabled": false,
+                    "tool_node": {
+                      "enabled": false,
+                      "used": false
+                    }
+                  },
+                  "agent_testing": {
+                    "enabled": false,
+                    "tests_ran_after_last_modification": false,
+                    "tests_ran_in_last_7_days": false
+                  }
+                },
+                "eleven_assistant": {
+                  "is_eleven_assistant": false
+                },
+                "initiator_id": null,
+                "conversation_initiation_source": "js_sdk",
+                "conversation_initiation_source_version": "0.6.0",
+                "timezone": null
+              },
+              "analysis": {
+                "evaluation_criteria_results": {},
+                "data_collection_results": {},
+                "call_successful": "success",
+                "transcript_summary": "The agent asks the user to tell it something.\n",
+                "call_summary_title": "Tell me something"
+              },
+              "conversation_initiation_client_data": {
+                "conversation_config_override": {
+                  "tts": null,
+                  "conversation": null,
+                  "agent": null
+                },
+                "custom_llm_extra_body": {
+                  "user_uuid": "056bbb62-225c-409e-8343-531a6c15ac85"
+                },
+                "user_id": null,
+                "source_info": {
+                  "source": null,
+                  "version": null
+                },
+                "dynamic_variables": {
+                  "system__agent_id": "agent_9901k3tqkh0ffacbxj0wcst7cph1",
+                  "system__current_agent_id": "agent_9901k3tqkh0ffacbxj0wcst7cph1",
+                  "system__conversation_id": "conv_4001k3x2e93je779x057et6q83sq",
+                  "system__caller_id": null,
+                  "system__called_number": null,
+                  "system__call_duration_secs": 6,
+                  "system__time_utc": "2025-08-30T08:45:32.717883+00:00",
+                  "system__time": "Saturday, 08:45 30 August 2025",
+                  "system__timezone": null,
+                  "system__call_sid": null
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://n8n-julia.perlecto.de/webhook/eb75c8b9-c239-4228-a852-0bc58040f84c",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Return_1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Add dbItem to object",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch type": {
+      "main": [
+        [
+          {
+            "node": "Convert B64 to audio file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge all keys",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Convert B64 to audio file": {
+      "main": [
+        [
+          {
+            "node": "Search transcript",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Search transcript": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "INSERT file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return_1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return_2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT file": {
+      "main": [
+        [
+          {
+            "node": "Return_2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Create Embedding",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge by position",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Create Embedding": {
+      "main": [
+        [
+          {
+            "node": "Merge by position",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add dbItem to object": {
+      "main": [
+        [
+          {
+            "node": "Merge all keys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge all keys": {
+      "main": [
+        [
+          {
+            "node": "Filter user items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter user items": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge by position": {
+      "main": [
+        [
+          {
+            "node": "INSERT embedding and text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c9320dc6-f199-42e7-973c-5650d71a8275",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "41f237597f6e9fc7dfc2966393477343d9e44f839204e5457640dd35995b4277"
+  },
+  "id": "zEKjnu3wNgsyyeYy",
+  "tags": []
+}

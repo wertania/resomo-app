@@ -1,0 +1,614 @@
+{
+  "name": "API_Ask question",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "65e6aea9-e7a2-44f0-8dd9-7eedbd41546d",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -352,
+        -112
+      ],
+      "id": "04fa2b30-0d92-4ab3-bc39-8d39da748f86",
+      "name": "POST question",
+      "webhookId": "65e6aea9-e7a2-44f0-8dd9-7eedbd41546d"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1c6ec77-3d4e-40ec-96af-b12066b238d4",
+              "leftValue": "={{ $json.chatInput }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "525a4a96-457b-4210-b703-10556d893b1f",
+              "leftValue": "={{ $('POST question').first().json.body.userSession }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        -112
+      ],
+      "id": "98adfbc7-344e-48e6-9d86-33b08d1bb118",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "Du beantwortest Fragen aus Interviews über das Leben einer Person.\nDu kannst dazu die User Fragen an das Tool geben, um Interview Teile aus der Datenbank zu holen um die Fragen zu beantworten.\n\nRichtlinien\n- Du kannst keine Informationen nutzen, die nicht aus dem Tool kommen\n- Du verwendest kein allgemeines Wissen\n- Du kennst die Person nicht und nutzt immer das Tool\n\nDu kannst das Tool so oft nutzen wie nötig.\nMindestens einmal pro Gespräch."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        -224
+      ],
+      "id": "4948a93a-f628-4617-a0dc-12a0a88784a0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"Field chatInput in Body or x-usersession-id in Header is missing.\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        368,
+        -16
+      ],
+      "id": "98fa6945-b49b-4110-8430-289202cd1c32",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "model": "mistral-large-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -32
+      ],
+      "id": "954aa959-ef12-4bb3-808d-32683514cb3c",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "LP2ML79lBIeM7Vjq",
+          "name": "Mistral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to get knowledge about the person you are answering quesitons about.",
+        "workflowId": {
+          "__rl": true,
+          "value": "qTFl6RqLc7J2bBkt",
+          "mode": "list",
+          "cachedResultName": "Helper_Query db by embedding"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "question": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('question', `The user's question or the context. Goes to embedding search.`, 'string') }}",
+            "userSession": "={{ $('POST question').first().json.headers[\"x-user-session-id\"] }}"
+          },
+          "matchingColumns": [
+            "question"
+          ],
+          "schema": [
+            {
+              "id": "question",
+              "displayName": "question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "userSession",
+              "displayName": "userSession",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1232,
+        -32
+      ],
+      "id": "9475ae09-4361-42de-bce9-efec55bf0bfc",
+      "name": "knowledge_tool"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1301f493-b66f-46f7-ad39-2700c80b84aa",
+              "leftValue": "={{ $json.sessionId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f9e4dfeb-1ef9-409a-9c7f-46d087117de5",
+              "leftValue": "={{ $json.sessionId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        -224
+      ],
+      "id": "765a716b-1a26-4bcb-b263-ff7dfa64e42e",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "action": "generate",
+        "dataPropertyName": "sessionId"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -336
+      ],
+      "id": "0f5d617f-99ef-4af0-a707-4f6a71fa0fe2",
+      "name": "Create sessionId if missing"
+    },
+    {
+      "parameters": {
+        "tableName": "chat_histories",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1088,
+        -32
+      ],
+      "id": "fad799c5-1e98-4a8c-bff2-9e03f3226539",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        -224
+      ],
+      "id": "16423e16-06de-4590-88e0-0ab963fccf82",
+      "name": "Forward items"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  message: $json.output,\n  sessionId: $json.sessionId,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        -224
+      ],
+      "id": "2c171bad-6233-4641-8ddf-b4fe890056fa",
+      "name": "Format"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1792,
+        -224
+      ],
+      "id": "e27eaad1-17af-419b-bb58-63625db321e6",
+      "name": "Response"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1360,
+        -224
+      ],
+      "id": "c188f378-3492-4ba3-aaad-896b7ae1faff",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return $json.body;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        -112
+      ],
+      "id": "2fdb81d6-883e-49f8-950f-03c410f28adc",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "chat_sessions",
+          "mode": "list",
+          "cachedResultName": "chat_sessions"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $json.sessionId }}",
+            "user_uuid": "={{ $json.userSession }}"
+          },
+          "matchingColumns": [
+            "session_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "user_uuid",
+              "displayName": "user_uuid",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        752,
+        -416
+      ],
+      "id": "fc751ffb-642f-4509-b939-d42953e14158",
+      "name": "Insert chat session",
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "POST question": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-julia.perlecto.de",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0",
+            "content-length": "85",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "de-DE,de;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,fr;q=0.5,it;q=0.4,mt;q=0.3,pl;q=0.2",
+            "content-type": "application/json",
+            "origin": "http://localhost:5173",
+            "priority": "u=1, i",
+            "referer": "http://localhost:5173/",
+            "sec-ch-ua": "\"Not;A=Brand\";v=\"99\", \"Microsoft Edge\";v=\"139\", \"Chromium\";v=\"139\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "79.247.22.97",
+            "x-forwarded-host": "n8n-julia.perlecto.de",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "f6d0fc36d827",
+            "x-real-ip": "79.247.22.97",
+            "x-user-session-id": "056bbb62-225c-409e-8343-531a6c15ac85"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "chatInput": "wer ist bärbel?",
+            "userSession": "056bbb62-225c-409e-8343-531a6c15ac85"
+          },
+          "webhookUrl": "https://n8n-julia.perlecto.de/webhook/65e6aea9-e7a2-44f0-8dd9-7eedbd41546d",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "POST question": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "knowledge_tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Create sessionId if missing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Forward items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create sessionId if missing": {
+      "main": [
+        [
+          {
+            "node": "Forward items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert chat session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Forward items": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9cbadfb7-e6a5-4219-94e8-13f0ea23672b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "41f237597f6e9fc7dfc2966393477343d9e44f839204e5457640dd35995b4277"
+  },
+  "id": "avNBNfZkxLIxRLiY",
+  "tags": []
+}

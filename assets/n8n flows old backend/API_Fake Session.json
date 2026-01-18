@@ -1,0 +1,764 @@
+{
+  "name": "API_Fake Session",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "05a9b519-aeb0-46ec-b2cc-a0b1c7e0547a",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        -112
+      ],
+      "id": "34c58c6e-65f6-4545-b0e7-fe58de8e9cc5",
+      "name": "Webhook",
+      "webhookId": "05a9b519-aeb0-46ec-b2cc-a0b1c7e0547a"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e35e4136-869c-4146-b385-7880b2c69e47",
+              "leftValue": "={{ $json.body.username }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "a0148a7a-f2c6-4404-811d-aa979061acb8",
+              "leftValue": "={{ $json.body.password }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        -112
+      ],
+      "id": "1cf51c4c-d5c2-49ff-8c75-e1bb3101ef21",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "users",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "name",
+              "value": "={{ $json.body.username }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        416,
+        -208
+      ],
+      "id": "9943ab2d-6352-4373-becb-80525cd98a8a",
+      "name": "Select rows from a table",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "type": "SHA512",
+        "value": "={{ $('Webhook').item.json.body.username }}_{{ $('Webhook').item.json.body.password }}",
+        "dataPropertyName": "hash"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -208
+      ],
+      "id": "f337d42a-d49a-4501-96dc-c813db5add3f",
+      "name": "Hash password"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "users",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $('Webhook').first().json.body.username }}",
+            "password": "={{ $('Hash password').first().json.hash }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "password",
+              "displayName": "password",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        960,
+        -112
+      ],
+      "id": "782842a3-3975-4408-b76d-c6424814a3a5",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const session = {\n  username: $json.name,\n  userSession: $json.uuid,\n};\n\nreturn session;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -192
+      ],
+      "id": "ce8d2b8e-72d1-49f5-a249-f2a659855e30",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aa139f87-9721-42dd-b79a-fbf80b3129dd",
+              "leftValue": "={{ $json.password }}",
+              "rightValue": "={{ $('Hash password').item.json.hash }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        -304
+      ],
+      "id": "515886c5-046a-4c55-8065-af734905107c",
+      "name": "Password match?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4c2284d8-fd69-48f5-bfcd-db2631b47cc8",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        -208
+      ],
+      "id": "243ca96d-8c61-4587-8f40-eb6ddce180b8",
+      "name": "User is existing?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"Not all values are set: username, password\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        192,
+        -16
+      ],
+      "id": "8421fdac-d6e8-4322-b963-7b5b56f57d98",
+      "name": "Missing fields error"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"A wrong password was given.\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1248,
+        -368
+      ],
+      "id": "930f6834-a080-4763-9db8-4ef2e0c358a0",
+      "name": "Wrong password"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1488,
+        -192
+      ],
+      "id": "52acde38-d190-4e0a-9e82-188c2502304b",
+      "name": "Return"
+    },
+    {
+      "parameters": {
+        "path": "05a9b519-aeb0-46ec-b2cc-a0b1c7e0547a",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        304
+      ],
+      "id": "7ea45b6b-3ae2-4d45-986c-b9f55b38c843",
+      "name": "Webhook1",
+      "webhookId": "05a9b519-aeb0-46ec-b2cc-a0b1c7e0547a"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "users",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "uuid",
+              "value": "={{ $json.headers[\"x-user-session-id\"] }}"
+            }
+          ]
+        },
+        "options": {
+          "outputColumns": [
+            "id",
+            "created_at",
+            "name",
+            "uuid"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        208,
+        192
+      ],
+      "id": "41b03f83-bd90-4e29-8e6a-55fb91075608",
+      "name": "Select rows from a table1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        640,
+        192
+      ],
+      "id": "5457c269-c6c2-4d08-b4a5-2ea2eb034819",
+      "name": "Return1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cc94c630-af6b-44cb-940f-80d0a19a8b51",
+              "leftValue": "={{ $json.headers[\"x-user-session-id\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        304
+      ],
+      "id": "0733d5d5-e626-453b-8aa3-855fb9909835",
+      "name": "Check session"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"x-usersession-id is missing\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        208,
+        416
+      ],
+      "id": "c365aa5a-010d-4343-b8be-b191bd765cdd",
+      "name": "Missing session"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9aabbcb8-b367-4c48-94eb-2e4c7bdb43ef",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        192
+      ],
+      "id": "4e83e899-c4fc-4c93-bf9d-12598d983383",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"User was not found\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        640,
+        416
+      ],
+      "id": "74be707e-d914-4993-89df-b27f6297158a",
+      "name": "Missing session1"
+    },
+    {
+      "parameters": {
+        "content": "## SQL table\n\n```sql\nCREATE TABLE IF NOT EXISTS public.users\n(\n    id integer NOT NULL DEFAULT nextval('users_id_seq'::regclass),\n    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,\n    name text COLLATE pg_catalog.\"default\" NOT NULL,\n    uuid uuid NOT NULL DEFAULT gen_random_uuid(),\n    password text COLLATE pg_catalog.\"default\" NOT NULL,\n    CONSTRAINT users_pkey PRIMARY KEY (id),\n    CONSTRAINT users_name_key UNIQUE (name),\n    CONSTRAINT users_uuid_key UNIQUE (uuid)\n)\n```",
+        "height": 320,
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -624
+      ],
+      "id": "75c111b5-8d3a-461f-9a36-1871496dd60a",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "body": {
+            "username": "bjoern",
+            "password": "bjoern"
+          }
+        }
+      }
+    ],
+    "Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n-julia.perlecto.de",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "de-DE,de;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,fr;q=0.5,it;q=0.4,mt;q=0.3,pl;q=0.2",
+            "cache-control": "max-age=0",
+            "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2BpqUL7vwuaBHsZJKzfOwMTGZKLqSe%2BVp7hbbRYuAHmE6lh3i8wk4d0; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX1%2FDISsfx%2BkRsY3j%2FUiH8gPH%2BgxoOnogkrN2msur14FJGJ%2BD%2FEbyuHXF; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX19jxdkuVwVxEtYYkA8dGXOLY6iXQaoNebpSd%2FebCRZXkMrawW%2ByDLL4Xg6Nq7KcHLwLRvkKQOyKOA%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2BZtUz0n0dNfeW2myzmy9cClF98lOD1U1pjZECPa%2BWLeV89GK4GL1C3bcDcsw%2BIwwqd1TW5oL8o7U32EZZAfaHK%2BXbR2Z9NvoNTaBqlDkJBgSHvDXg5WH5BW7EvH7NuZoTZJzdJZ9EdvabU%2F%2BioeaaR7%2B7pgWllEAE%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2BXifD%2Fw%2BZvLnFbWWEO6TTKbZ2%2BSCtzcpdxTebkedf9bbQMkoIpbiJB7JNuWb%2FtMdP2oZ80q%2B6kc2zZveirZoJr7vdz4zwbGPeKbX6GWEFpjLhiEipzJiOsTcIZ8cg5S9sHxM1SrtG%2BAg%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%2241f237597f6e9fc7dfc2966393477343d9e44f839204e5457640dd35995b4277%2334e79ede-ccba-4b46-a131-80c581d8e700%22%2C%22%24sesid%22%3A%5B1756541520436%2C%220198f9f8-6a38-7f90-bdec-035a9e62368e%22%2C1756540463671%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22https%3A%2F%2Fcoolify.perlecto.de%2F%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.perlecto.de%2Fsetup%22%7D%7D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2B8b7Oem%2FV82Yn7HL9VyHvN4%2BrSS3JUii1filoUOuRIByl5wiIJR0BtbrnTYuz9OhKifEvitApJ9A1CqE8w5NM5zVff1N%2B61g2eiG%2FXuuikj47tWNkkOdjDQ6CwVqbLex87oxBqy3fDRA%3D%3D",
+            "priority": "u=0, i",
+            "sec-ch-ua": "\"Not;A=Brand\";v=\"99\", \"Microsoft Edge\";v=\"139\", \"Chromium\";v=\"139\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "none",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1",
+            "x-forwarded-for": "79.247.22.97",
+            "x-forwarded-host": "n8n-julia.perlecto.de",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "f6d0fc36d827",
+            "x-real-ip": "79.247.22.97",
+            "x-user-session-id": "056bbb62-225c-409e-8343-531a6c15ac85"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "https://n8n-julia.perlecto.de/webhook-test/05a9b519-aeb0-46ec-b2cc-a0b1c7e0547a",
+          "executionMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Hash password",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Missing fields error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "User is existing?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hash password": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Password match?": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wrong password",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User is existing?": {
+      "main": [
+        [
+          {
+            "node": "Password match?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Check session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check session": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Missing session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Return1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Missing session1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "12684869-e650-4f1c-ab12-b4fb839a7ed5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "41f237597f6e9fc7dfc2966393477343d9e44f839204e5457640dd35995b4277"
+  },
+  "id": "wDc2KRfLUEZbTGm2",
+  "tags": []
+}

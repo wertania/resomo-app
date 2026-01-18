@@ -1,0 +1,219 @@
+{
+  "name": "Helper_Query db by embedding",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mistral.ai/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mistralCloudApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "mistral-embed"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.question }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        192,
+        -96
+      ],
+      "id": "9bc1307a-9af2-47d8-9ea5-fc6f9c919b0b",
+      "name": "Create Embedding",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "LP2ML79lBIeM7Vjq",
+          "name": "Mistral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        -160
+      ],
+      "id": "a45cbb18-4a40-41c4-b3c1-acb7d2e23964",
+      "name": "Return"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "question"
+            },
+            {
+              "name": "userSession"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -48,
+        -96
+      ],
+      "id": "cb926695-1f31-470c-9e7d-4c4ff1fc24ce",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  k.id,\n  k.text,\n  k.meta,\n  k.transcript_id\nFROM\n  public.transcript_embeddings k\nJOIN\n  public.transcripts c ON c.id = k.transcript_id\nWHERE\n  c.user_uuid = '{{ $('When Executed by Another Workflow').item.json.userSession }}'\nORDER BY\n  k.embedding <-> '[{{ $json.data[0].embedding.join(\",\") }}]' ASC\nLIMIT {{ $('When Executed by Another Workflow').item.json.count ?? 5 }};",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        464,
+        -96
+      ],
+      "id": "1ef16821-f39c-4a4e-8f50-82fd4080f069",
+      "name": "Get nearest embedding",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "fxU89mPjVxkG9iNw",
+          "name": "Postgres n8n_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3c2a052e-0471-42f3-bc1d-a2c10fd7e4cf",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        -96
+      ],
+      "id": "0d001b41-1849-4fc0-b811-c0542021ef23",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    data: [],\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -16
+      ],
+      "id": "77be1ac5-9e30-4d32-ad01-7e5819f25e61",
+      "name": "Empty"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "question": "Hallo",
+          "userSession": "056bbb62-225c-409e-8343-531a6c15ac85"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Create Embedding": {
+      "main": [
+        [
+          {
+            "node": "Get nearest embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Create Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get nearest embedding": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Return",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Empty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "62d09abf-1552-4108-a348-67c23f10a5f0",
+  "meta": {
+    "instanceId": "41f237597f6e9fc7dfc2966393477343d9e44f839204e5457640dd35995b4277"
+  },
+  "id": "qTFl6RqLc7J2bBkt",
+  "tags": []
+}
