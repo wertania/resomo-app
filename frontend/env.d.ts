@@ -6,6 +6,12 @@ declare module '~icons/mdi/*' {
   export default component
 }
 
+declare module '~icons/line-md/*' {
+  import { FunctionalComponent, SVGAttributes } from 'vue'
+  const component: FunctionalComponent<SVGAttributes>
+  export default component
+}
+
 declare module '~icons/fa-solid/*' {
   import { FunctionalComponent, SVGAttributes } from 'vue'
   const component: FunctionalComponent<SVGAttributes>

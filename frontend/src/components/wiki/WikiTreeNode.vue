@@ -2,12 +2,19 @@
   <li class="wiki-tree-node">
     <div
       :class="[
-        'group flex items-center gap-1 rounded px-2 py-1.5 transition-colors cursor-pointer',
+        'group flex items-center gap-1 rounded px-2 py-1.5 transition-colors cursor-move',
         isSelected
           ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'
           : 'text-surface-700 hover:bg-surface-100 dark:text-surface-300 dark:hover:bg-surface-700/50',
+        isDragOver && 'bg-primary-50 dark:bg-primary-900/20 ring-2 ring-primary-400',
       ]"
+      draggable="true"
       @click="$emit('select', item.id)"
+      @dragstart="handleDragStart"
+      @dragend="handleDragEnd"
+      @dragover.prevent="handleDragOver"
+      @dragleave="handleDragLeave"
+      @drop.prevent="handleDrop"
     >
       <!-- Expand/Collapse Button -->
       <button
@@ -34,17 +41,27 @@
 
       <!-- Actions -->
       <div
-        class="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100"
+        class="flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
       >
         <Button
           text
           size="small"
           severity="secondary"
-          class="h-6 w-6 p-0"
+          class="h-8 w-8 p-0"
           @click.stop="handleAddChild"
           :title="$t('Wiki.addChild') || 'Add child'"
         >
-          <IconAdd class="h-3.5 w-3.5" />
+          <IconAdd class="h-5 w-5" />
+        </Button>
+        <Button
+          text
+          size="small"
+          severity="secondary"
+          class="h-8 w-8 p-0"
+          @click.stop="handleMoveToRoot"
+          :title="$t('Wiki.moveToRoot') || 'Move to root'"
+        >
+          <IconHome class="h-5 w-5" />
         </Button>
       </div>
     </div>
@@ -59,10 +76,12 @@
         :key="child.id"
         :item="child"
         :selected-id="selectedId"
+        :is-tenant-wide="isTenantWide"
         @select="$emit('select', $event)"
         @add-child="$emit('add-child', $event)"
         @edit="$emit('edit', $event)"
         @delete="$emit('delete', $event)"
+        @move="$emit('move', $event)"
       />
     </ul>
   </li>
@@ -70,13 +89,15 @@
 
 <script setup lang="ts">
 import type { KnowledgeText } from '@/stores/knowledgeTexts'
-import IconChevronRight from '~icons/mdi/chevron-right'
-import IconDocument from '~icons/mdi/file-document-outline'
-import IconAdd from '~icons/mdi/plus'
+import IconChevronRight from '~icons/line-md/chevron-right'
+import IconDocument from '~icons/line-md/file-document'
+import IconAdd from '~icons/line-md/plus'
+import IconHome from '~icons/line-md/home'
 
 const props = defineProps<{
   item: KnowledgeText
   selectedId: string | null
+  isTenantWide?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -84,9 +105,11 @@ const emit = defineEmits<{
   'add-child': [parentId: string]
   edit: [id: string]
   delete: [id: string]
+  move: [data: { itemId: string; newParentId: string | null; targetTenantWide: boolean }]
 }>()
 
 const isExpanded = ref(true)
+const isDragOver = ref(false)
 
 const hasChildren = computed(() => {
   return props.item.children && props.item.children.length > 0
@@ -102,5 +125,63 @@ const toggleExpand = () => {
 
 const handleAddChild = () => {
   emit('add-child', props.item.id)
+}
+
+const handleMoveToRoot = () => {
+  emit('move', { 
+    itemId: props.item.id, 
+    newParentId: null,
+    targetTenantWide: props.isTenantWide ?? props.item.tenantWide
+  })
+}
+
+// Drag and Drop handlers
+let draggedItemId: string | null = null
+
+const handleDragStart = (event: DragEvent) => {
+  draggedItemId = props.item.id
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', props.item.id)
+  }
+  // Add a visual feedback
+  ;(event.target as HTMLElement).style.opacity = '0.5'
+}
+
+const handleDragEnd = (event: DragEvent) => {
+  ;(event.target as HTMLElement).style.opacity = '1'
+  draggedItemId = null
+}
+
+const handleDragOver = (event: DragEvent) => {
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'move'
+  }
+  // Don't allow dropping on itself
+  if (draggedItemId !== props.item.id) {
+    isDragOver.value = true
+  }
+}
+
+const handleDragLeave = () => {
+  isDragOver.value = false
+}
+
+const handleDrop = (event: DragEvent) => {
+  isDragOver.value = false
+  
+  const droppedItemId = event.dataTransfer?.getData('text/plain')
+  
+  // Don't allow dropping on itself
+  if (droppedItemId && droppedItemId !== props.item.id) {
+    // Check if trying to drop a parent onto its own child (would create circular reference)
+    // This check should ideally be more thorough, but for now we'll let the backend handle it
+    // Use the parent's tenantWide as the target tenantWide
+    emit('move', { 
+      itemId: droppedItemId, 
+      newParentId: props.item.id,
+      targetTenantWide: props.item.tenantWide
+    })
+  }
 }
 </script>

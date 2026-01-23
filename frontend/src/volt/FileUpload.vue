@@ -63,8 +63,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import FluentCloudUpload from '~icons/mdi/cloud-upload'
-import FluentDelete from '~icons/mdi/delete'
+import FluentCloudUpload from '~icons/line-md/cloud-alt-upload'
+import FluentDelete from '~icons/line-md/trash'
 import Button from './Button.vue'
 
 interface Props {

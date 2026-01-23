@@ -61,7 +61,7 @@
           >
             <IconFluentPeopleTeam24Regular class="size-3.5" />
             <span>{{
-              appStore.state.teams?.find((team) => team.id === entry.teamId)
+              userStore.state.teams?.find((team) => team.id === entry.teamId)
                 ?.name || $t('Knowledge.entry.team')
             }}</span>
           </Chip>
@@ -88,16 +88,16 @@
 </template>
 
 <script setup lang="ts">
-import IconFluentPerson24Regular from '~icons/mdi/account'
-import IconFluentPeopleTeam24Regular from '~icons/mdi/account-group'
-import IconFluentClock24Regular from '~icons/mdi/clock-outline'
-import IconFluentFolder24Regular from '~icons/mdi/folder-outline'
+import IconFluentPerson24Regular from '~icons/line-md/account'
+import IconFluentPeopleTeam24Regular from '~icons/line-md/account-small'
+import IconFluentClock24Regular from '~icons/line-md/calendar'
+import IconFluentFolder24Regular from '~icons/line-md/folder'
 import type { KnowledgeEntry } from '@/types/knowledge'
-import { useApp } from '@/stores/main'
+import { useUser } from '@/stores/user'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{ entry: KnowledgeEntry; modelValue?: boolean }>()
-const appStore = useApp()
+const userStore = useUser()
 const { t, d } = useI18n()
 
 const emit = defineEmits(['selection-change', 'update:modelValue'])

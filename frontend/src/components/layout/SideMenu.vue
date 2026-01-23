@@ -5,25 +5,30 @@
       'w-full border-none !bg-transparent overflow-hidden',
       collapsed && 'collapsed !min-w-0',
     ]"
+    :pt="{
+      itemContent:
+        'bg-transparent hover:bg-transparent dark:hover:bg-transparent p-focus:bg-transparent dark:p-focus:bg-transparent p-focus:text-inherit dark:p-focus:text-inherit rounded-none',
+      separator: 'my-2 border-t border-surface-300 dark:border-surface-600',
+    }"
   >
     <template #item="{ item }">
       <router-link
         v-if="item.to"
         :to="item.to"
         :class="[
-          'flex items-center cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 rounded-sm no-underline text-surface-700 dark:text-surface-0 transition-colors duration-200',
+          'flex items-center cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 rounded-3xl no-underline text-surface-700 dark:text-surface-0 transition-colors duration-200',
           collapsed
-            ? 'justify-center !px-0 py-3 w-full collapsed !mx-0'
-            : 'gap-2 px-3 py-2',
+            ? 'justify-center !px-0 py-3 w-full collapsed mx-0'
+            : 'gap-2 px-3 py-2 mx-2',
         ]"
-        active-class="bg-surface-100 dark:bg-surface-800 font-medium text-primary-600 dark:text-primary-400"
+        active-class="bg-surface-100 dark:bg-surface-800 rounded-3xl font-medium text-primary-600 dark:text-primary-400"
         :title="collapsed ? item.label : undefined"
       >
         <component
           :is="item.icon"
           :class="[
             'text-surface-400 dark:text-surface-500 transition-all duration-200 flex-shrink-0',
-            collapsed ? 'w-5 h-5' : 'w-4 h-4',
+            collapsed ? 'w-5 h-5' : 'w-5 h-5',
             {
               'text-primary-600 dark:text-primary-400': $route.path === item.to,
             },
@@ -36,10 +41,10 @@
       <div
         v-else-if="item.command"
         :class="[
-          'flex items-center cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 rounded-sm text-surface-700 dark:text-surface-0 transition-colors duration-200',
+          'flex items-center cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 rounded-3xl text-surface-700 dark:text-surface-0 transition-colors duration-200',
           collapsed
-            ? 'justify-center !px-0 py-3 w-full collapsed !mx-0'
-            : 'gap-2 px-3 py-2',
+            ? 'justify-center !px-0 py-3 w-full collapsed mx-0'
+            : 'gap-2 px-3 py-2 mx-2',
         ]"
         @click="item.command?.({ originalEvent: $event, item })"
         :title="collapsed ? item.label : undefined"
@@ -48,7 +53,7 @@
           :is="item.icon"
           :class="[
             'text-surface-400 dark:text-surface-500 transition-all duration-200 flex-shrink-0',
-            collapsed ? 'w-5 h-5' : 'w-4 h-4',
+            collapsed ? 'w-5 h-5' : 'w-5 h-5',
           ]"
         />
         <span v-if="!collapsed" class="transition-opacity duration-200">{{
@@ -63,17 +68,9 @@
 import { computed, markRaw } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Menu from '@/volt/Menu.vue'
-import { useApp } from '@/stores/main'
-import IconDashboard from '~icons/mdi/view-dashboard'
-import IconFinancial from '~icons/mdi/finance'
-import IconChart from '~icons/mdi/chart-line'
-import IconRoadmap from '~icons/mdi/map-marker-path'
-import IconCompetitors from '~icons/mdi/account-group'
-import IconMemberships from '~icons/mdi/card-account-details'
-import IconProtocol from '~icons/mdi/microphone'
-import IconChat from '~icons/mdi/chat'
-import IconBook from '~icons/mdi/book'
-import IconWiki from '~icons/mdi/file-document-multiple-outline'
+import { useUser } from '@/stores/user'
+import IconDashboard from '~icons/line-md/home'
+import IconWiki from '~icons/line-md/file-document'
 import type { MenuItem } from 'primevue/menuitem'
 
 interface CustomMenuItem extends Omit<MenuItem, 'icon'> {
@@ -90,10 +87,10 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { t } = useI18n()
-const appStore = useApp()
+const userStore = useUser()
 
 const items = computed(() => {
-  const tenantId = appStore.state.selectedTenant
+  const tenantId = userStore.state.selectedTenant
 
   const menuItems: CustomMenuItem[] = [
     {
@@ -101,57 +98,15 @@ const items = computed(() => {
       icon: markRaw(IconDashboard),
       to: '/dashboard',
     },
-    {
-      label: t('MenuSideItems.financialPlanning'),
-      icon: markRaw(IconFinancial),
-      to: '/financial/planning',
-    },
-    {
-      label: t('MenuSideItems.financialDashboard'),
-      icon: markRaw(IconChart),
-      to: '/financial/dashboard',
-    },
-    {
-      label: t('MenuSideItems.roadmap'),
-      icon: markRaw(IconRoadmap),
-      to: '/roadmap',
-    },
-    {
-      label: t('MenuSideItems.competitors'),
-      icon: markRaw(IconCompetitors),
-      to: '/competitors',
-    },
-    {
-      label: t('MenuSideItems.memberships'),
-      icon: markRaw(IconMemberships),
-      to: '/memberships',
-    },
-    {
-      label: t('MenuSideItems.protocol'),
-      icon: markRaw(IconProtocol),
-      to: '/transcription',
-    },
   ]
 
   // Add tenant-specific menu items if tenantId is available
   if (tenantId) {
-    menuItems.push(
-      {
-        label: t('MenuSideItems.chat'),
-        icon: markRaw(IconChat),
-        to: `/tenant/${tenantId}/chat`,
-      },
-      {
-        label: t('MenuSideItems.wiki'),
-        icon: markRaw(IconWiki),
-        to: `/tenant/${tenantId}/wiki`,
-      },
-      {
-        label: t('MenuSideItems.manageKnowledgeGroups'),
-        icon: markRaw(IconBook),
-        to: `/manage/${tenantId}/knowledge`,
-      },
-    )
+    menuItems.push({
+      label: t('MenuSideItems.wiki'),
+      icon: markRaw(IconWiki),
+      to: `/tenant/${tenantId}/wiki`,
+    })
   }
 
   return menuItems as any

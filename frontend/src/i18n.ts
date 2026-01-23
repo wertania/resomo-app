@@ -1,5 +1,5 @@
 import { createI18n } from 'vue-i18n'
-const SUPPORTED_LANGUAGES = ['de']
+const SUPPORTED_LANGUAGES = ['en', 'de']
 
 type Messages = Record<string, any>
 
@@ -7,7 +7,7 @@ type Messages = Record<string, any>
  * Detect the browser language
  */
 const getBrowserLanguage = () => {
-  return navigator.language.split('-')[0]?.toLowerCase() ?? 'de'
+  return navigator.language.split('-')[0]?.toLowerCase() ?? 'en'
 }
 
 // Check localStorage first, then browser language, default to 'en'
@@ -17,7 +17,7 @@ const getStartupLanguage = () => {
     return savedLocale
   }
   const browserLang = getBrowserLanguage()
-  return SUPPORTED_LANGUAGES.includes(browserLang) ? browserLang : 'de'
+  return SUPPORTED_LANGUAGES.includes(browserLang) ? browserLang : 'en'
 }
 
 const STARTUP_LANGUAGE = getStartupLanguage()
@@ -70,13 +70,13 @@ type MessageSchema = (typeof messages)['en']
 export const i18n = createI18n({
   legacy: false,
   locale: STARTUP_LANGUAGE,
-  fallbackLocale: 'de',
+  fallbackLocale: 'en',
   messages,
 })
 
 export const setLocale = (locale: string) => {
   if (SUPPORTED_LANGUAGES.includes(locale)) {
-    i18n.global.locale.value = locale as 'de'
+    i18n.global.locale.value = locale as 'de' | 'en'
     // Save to localStorage for persistence
     localStorage.setItem('locale', locale)
   }

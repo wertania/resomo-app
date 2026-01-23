@@ -5,14 +5,14 @@
       :class="[
         'hidden md:flex flex-col transition-all duration-300 ease-in-out',
         'border-r border-surface-200 dark:border-surface-700',
-        'bg-surface-0 dark:bg-surface-900',
+        'bg-surface-50 dark:bg-surface-800',
         'overflow-hidden',
         sidebarCollapsed ? 'w-20' : 'w-72',
       ]"
     >
       <!-- Sidebar Header -->
       <div
-        class="flex items-center justify-center h-16 px-4 border-b border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900"
+        class="flex items-center justify-center h-16 px-4 bg-surface-50 dark:bg-surface-800"
       >
         <transition name="fade" mode="out-in">
           <div
@@ -23,7 +23,7 @@
             <slot name="logo">
               <img
                 :src="logoPath"
-                alt="Logo"
+                alt="Symbiosika"
                 class="h-12 w-auto object-contain"
               />
             </slot>
@@ -36,7 +36,7 @@
             <slot name="logo-square">
               <img
                 :src="logoSquarePath"
-                alt="Logo"
+                alt="Symbiosika"
                 class="h-10 w-10 object-contain"
               />
             </slot>
@@ -51,7 +51,7 @@
 
       <!-- Sidebar Footer with Toggle Button -->
       <div
-        class="flex-shrink-0 border-t border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900"
+        class="flex-shrink-0 bg-surface-50 dark:bg-surface-800"
       >
         <button
           type="button"
@@ -104,7 +104,7 @@
           <slot name="logo-square">
             <img
               :src="logoSquarePath"
-              alt="Logo"
+              alt="Symbiosika"
               class="h-8 w-8 object-contain"
             />
           </slot>
@@ -260,36 +260,6 @@
                   <span>{{ item.label }}</span>
                 </div>
                 <RouterLink
-                  v-else-if="item.template === 'profileTenants' && item.to"
-                  :to="item.to"
-                  class="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 rounded-sm no-underline text-inherit"
-                >
-                  <IconOfficeBuilding
-                    class="w-4 h-4 text-surface-400 dark:text-surface-500"
-                  />
-                  <span>{{ item.label }}</span>
-                </RouterLink>
-                <RouterLink
-                  v-else-if="item.template === 'profileTeams' && item.to"
-                  :to="item.to"
-                  class="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 rounded-sm no-underline text-inherit"
-                >
-                  <IconAccountGroup
-                    class="w-4 h-4 text-surface-400 dark:text-surface-500"
-                  />
-                  <span>{{ item.label }}</span>
-                </RouterLink>
-                <RouterLink
-                  v-else-if="item.template === 'profileTokens' && item.to"
-                  :to="item.to"
-                  class="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 rounded-sm no-underline text-inherit"
-                >
-                  <IconKey
-                    class="w-4 h-4 text-surface-400 dark:text-surface-500"
-                  />
-                  <span>{{ item.label }}</span>
-                </RouterLink>
-                <RouterLink
                   v-else-if="item.template === 'profileLogout' && item.to"
                   :to="item.to"
                   class="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 rounded-sm no-underline text-inherit"
@@ -313,7 +283,7 @@
                   v-else-if="item.template === 'profileLanguage'"
                   :class="[
                     'flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 rounded-sm',
-                    item.class
+                    item.class,
                   ]"
                   @click="item.command?.({ originalEvent: $event, item })"
                 >
@@ -335,7 +305,7 @@
       </header>
 
       <!-- Main Content -->
-      <main class="flex-1 overflow-y-auto bg-surface-50 dark:bg-surface-900">
+      <main class="flex-1 overflow-y-auto">
         <RouterView />
       </main>
     </div>
@@ -362,7 +332,7 @@
           <slot name="logo-square">
             <img
               :src="logoSquarePath"
-              alt="Logo"
+              alt="Symbiosika"
               class="h-9 w-9 object-contain"
             />
           </slot>
@@ -391,22 +361,20 @@ import type { MenuItem } from 'primevue/menuitem'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useApp } from '@/stores/main'
+import { useUser } from '@/stores/user'
 import { setLocale } from '@/i18n'
 
 // Iconify icons
-import IconUser from '~icons/mdi/user'
-import IconCog from '~icons/mdi/cog'
-import IconSliders from '~icons/mdi/tune'
-import IconHelpCircle from '~icons/mdi/help-circle'
-import IconLogout from '~icons/mdi/logout'
-import IconMenu from '~icons/mdi/menu'
-import IconClose from '~icons/mdi/close'
-import IconChevronLeft from '~icons/mdi/chevron-left'
-import IconChevronRight from '~icons/mdi/chevron-right'
-import IconOfficeBuilding from '~icons/mdi/office-building'
-import IconAccountGroup from '~icons/mdi/account-group'
-import IconKey from '~icons/mdi/key'
-import IconTranslate from '~icons/mdi/translate'
+import IconUser from '~icons/line-md/account'
+import IconCog from '~icons/line-md/cog'
+import IconSliders from '~icons/line-md/cog'
+import IconHelpCircle from '~icons/line-md/question-circle'
+import IconLogout from '~icons/line-md/logout'
+import IconMenu from '~icons/line-md/menu'
+import IconClose from '~icons/line-md/close'
+import IconChevronLeft from '~icons/line-md/chevron-left'
+import IconChevronRight from '~icons/line-md/chevron-right'
+import IconTranslate from '~icons/line-md/chat'
 
 interface Props {
   userName?: string
@@ -447,6 +415,7 @@ const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n()
 const appStore = useApp()
+const userStore = useUser()
 const authStore = useAuthStore()
 
 const handleLogout = async () => {
@@ -477,13 +446,13 @@ const logoSquarePath = computed(() => {
 // User profile image - only calculated once app is initialized
 const userProfileImage = computed(() => {
   // Only calculate if app is initialized (not loading)
-  if (appStore.state.loading) {
+  if (userStore.isLoading) {
     return 'images/user.png'
   }
 
   const image =
-    appStore.state.user?.profileImageName &&
-    appStore.state.user?.profileImageName !== ''
+    userStore.currentUser?.profileImageName &&
+    userStore.currentUser?.profileImageName !== ''
 
   if (image) {
     return `/api/v1/user/profile-image`
@@ -495,11 +464,11 @@ const userProfileImage = computed(() => {
 // User initials - only calculated once app is initialized
 const userInitials = computed(() => {
   // Only calculate if app is initialized (not loading)
-  if (appStore.state.loading) {
+  if (userStore.isLoading) {
     return ''
   }
 
-  const user = appStore.state.user
+  const user = userStore.currentUser
   if (!user) return ''
 
   const firstInitial = user.firstname?.charAt(0).toUpperCase() || ''
@@ -512,11 +481,11 @@ const userInitials = computed(() => {
 
 // User name from store
 const userName = computed(() => {
-  if (appStore.state.loading || !appStore.state.user) {
+  if (userStore.isLoading || !userStore.currentUser) {
     return props.userName || 'User'
   }
 
-  const user = appStore.state.user
+  const user = userStore.currentUser
   if (user.firstname && user.surname) {
     return `${user.firstname} ${user.surname}`
   }
@@ -531,10 +500,10 @@ const userName = computed(() => {
 
 // User email from store
 const userEmail = computed(() => {
-  if (appStore.state.loading || !appStore.state.user) {
+  if (userStore.isLoading || !userStore.currentUser) {
     return props.userEmail || 'user@example.com'
   }
-  return appStore.state.user.email || props.userEmail || 'user@example.com'
+  return userStore.currentUser.email || props.userEmail || 'user@example.com'
 })
 
 const breadcrumbItems = computed(() => {
@@ -573,11 +542,16 @@ const profileMenuItems = computed<MenuItem[]>(() => {
 
   // Only show Administrators
   if (appStore.isTenantAdmin) {
-    items.push({
-      label: t('MenuUser.administration'),
-      template: 'profileUser',
-      to: '/administration',
-    })
+    items.push(
+      {
+        separator: true,
+      },
+      {
+        label: t('MenuUser.administration'),
+        template: 'profileUser',
+        to: '/administration',
+      },
+    )
   }
 
   items.push(
@@ -622,11 +596,11 @@ const toggleMobileSidebar = () => {
 const handleHelpClick = () => {
   // Navigate to chat if tenant is available
   if (
-    appStore.state.tenants &&
-    appStore.state.tenants.length > 0 &&
-    appStore.state.tenants[0]
+    userStore.state.tenants &&
+    userStore.state.tenants.length > 0 &&
+    userStore.state.tenants[0]
   ) {
-    router.push(`/tenant/${appStore.state.tenants[0].id}/chat`)
+    router.push(`/tenant/${userStore.state.tenants[0].tenantId}/chat`)
   }
 }
 
@@ -675,6 +649,16 @@ const handleEscapeKey = (event: KeyboardEvent) => {
     }
   }
 }
+
+// Close mobile sidebar on route change
+watch(
+  () => route.path,
+  () => {
+    if (mobileSidebarOpen.value) {
+      mobileSidebarOpen.value = false
+    }
+  }
+)
 
 onMounted(async () => {
   document.addEventListener('keydown', handleEscapeKey)

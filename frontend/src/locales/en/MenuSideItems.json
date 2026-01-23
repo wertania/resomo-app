@@ -1,0 +1,16 @@
+{
+  "dashboard": "Dashboard",
+  "general": "General",
+  "financialPlanning": "Financial Planning",
+  "financialDashboard": "Financial Dashboard",
+  "financialSettings": "Settings",
+  "roadmap": "Roadmap Planning",
+  "competitors": "Competitors",
+  "memberships": "Memberships",
+  "protocol": "Protocol",
+  "chat": "Chat",
+  "wiki": "Wiki",
+  "manageKnowledgeGroups": "Knowledge Groups",
+  "qrcode": "QR Code Generator"
+}
+

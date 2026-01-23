@@ -9,12 +9,6 @@ const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/login',
-      name: 'Login',
-      component: () => import('../views/auth/login.vue'),
-      meta: { requiresAuth: false },
-    },
-    {
       path: '/profile',
       name: 'Profile',
       component: () => import('../views/auth/profile.vue'),
@@ -24,55 +18,34 @@ const router = createRouter({
     // Mobile Layout Routes
     {
       path: '/mobile',
+      name: 'mobile',
       component: MobileLayout,
       meta: { requiresAuth: true },
       children: [
         {
           path: '',
           name: 'MobileHome',
-          component: () => import('../views/mobile/Home.vue'),
-          meta: { headerTitle: 'Resomo' },
+          component: () => import('../views/dashboard/index.vue'),
         },
         {
-          path: 'recording',
-          name: 'MobileRecording',
-          component: () => import('../views/mobile/Recording.vue'),
-          meta: { headerTitle: 'KI-Assistent' },
+          path: 'settings',
+          name: 'MobileSettings',
+          component: () => import('../views/user/index.vue'),
         },
         {
-          path: 'chat',
+          path: 'tenant/:tenantId/chat',
           name: 'MobileChat',
-          component: () => import('../views/mobile/Chat.vue'),
-          meta: { headerTitle: 'KI-Assistent' },
+          component: () => import('../views/chat/index.vue'),
         },
         {
-          path: 'archive',
-          name: 'MobileArchive',
-          component: () => import('../views/mobile/Archive.vue'),
-          meta: { headerTitle: 'Aufnahmenarchiv' },
+          path: 'tenant/:tenantId/chat/:chatId',
+          name: 'MobileChatWithId',
+          component: () => import('../views/chat/index.vue'),
         },
         {
-          path: 'archive-entry',
-          name: 'MobileArchiveEntry',
-          component: () => import('../views/mobile/ArchiveEntry.vue'),
-        },
-        {
-          path: 'familiy-tree',
-          name: 'MobileFamilyTree',
-          component: () => import('../views/mobile/FamilyTree.vue'),
-          meta: { headerTitle: 'Familienbaum' },
-        },
-        {
-          path: 'photobook',
-          name: 'MobilePhotobook',
-          component: () => import('../views/mobile/Photobook.vue'),
-          meta: { headerTitle: 'Fotobuch' },
-        },
-        {
-          path: 'account',
-          name: 'MobileAccount',
-          component: () => import('../views/mobile/Account.vue'),
-          meta: { headerTitle: 'Resomo' },
+          path: 'tenant/:tenantId/wiki',
+          name: 'MobileWiki',
+          component: () => import('../views/wiki/index.vue'),
         },
       ],
     },
@@ -104,41 +77,40 @@ const router = createRouter({
           name: 'Chat',
           component: () => import('../views/chat/index.vue'),
         },
-
         {
-          path: 'transcription',
-          name: 'Transcription',
-          component: () => import('../views/transcription/index.vue'),
+          path: 'tenant/:tenantId/chat/:chatId',
+          name: 'ChatWithId',
+          component: () => import('../views/chat/index.vue'),
         },
         {
           path: 'tenant/:tenantId/wiki',
           name: 'Wiki',
           component: () => import('../views/wiki/index.vue'),
         },
-        {
-          path: '/manage/:tenantId/knowledge',
-          children: [
-            {
-              path: '',
-              name: 'ManageKnowledge',
-              component: () => import('../views/manage/knowledge/index.vue'),
-              children: [
-                {
-                  path: '',
-                  name: 'ManageKnowledgeGroups',
-                  component: () =>
-                    import('../views/manage/knowledge/GroupsList.vue'),
-                },
-                {
-                  path: ':groupId',
-                  name: 'ManageKnowledgeDetails',
-                  component: () =>
-                    import('../views/manage/knowledge/GroupDetails.vue'),
-                },
-              ],
-            },
-          ],
-        },
+        // {
+        //   path: '/manage/:tenantId/knowledge',
+        //   children: [
+        //     {
+        //       path: '',
+        //       name: 'ManageKnowledge',
+        //       component: () => import('../views/manage/knowledge/index.vue'),
+        //       children: [
+        //         {
+        //           path: '',
+        //           name: 'ManageKnowledgeGroups',
+        //           component: () =>
+        //             import('../views/manage/knowledge/GroupsList.vue'),
+        //         },
+        //         {
+        //           path: ':groupId',
+        //           name: 'ManageKnowledgeDetails',
+        //           component: () =>
+        //             import('../views/manage/knowledge/GroupDetails.vue'),
+        //         },
+        //       ],
+        //     },
+        //   ],
+        // },
       ],
     },
 

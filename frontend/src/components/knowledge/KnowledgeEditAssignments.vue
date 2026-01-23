@@ -47,7 +47,7 @@
 import type { KnowledgeEntry } from '@/types/knowledge'
 import { useKnowledgeGroupsStore } from '@/stores/knowledgeGroups'
 import { useKnowledgeBaseStore } from '@/stores/knowledgeBase'
-import { useApp } from '@/stores/main'
+import { useUser } from '@/stores/user'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
@@ -62,7 +62,7 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const appStore = useApp()
+const userStore = useUser()
 const toast = useToast()
 const { t } = useI18n()
 const knowledgeGroupsStore = useKnowledgeGroupsStore()
@@ -79,8 +79,8 @@ const knowledgeGroups = computed(() => {
 })
 
 onMounted(async () => {
-  if (knowledgeGroups.value.length === 0 && appStore.state.selectedTenant) {
-    await knowledgeGroupsStore.fetchGroups(appStore.state.selectedTenant)
+  if (knowledgeGroups.value.length === 0 && userStore.state.selectedTenant) {
+    await knowledgeGroupsStore.fetchGroups(userStore.state.selectedTenant)
   }
 })
 
@@ -93,13 +93,13 @@ const resetForm = () => {
 
 // Save the changes using the API
 const saveChanges = async () => {
-  if (!appStore.state.selectedTenant) return
+  if (!userStore.state.selectedTenant) return
 
   saving.value = true
   try {
     // Always set userOwned to false and teamId to null (tenant-wide only)
     await fetcher.put(
-      `/api/v1/tenant/${appStore.state.selectedTenant}/knowledge/entries/${props.entry.id}`,
+      `/api/v1/tenant/${userStore.state.selectedTenant}/knowledge/entries/${props.entry.id}`,
       {
         userOwned: false,
         teamId: null,
@@ -116,7 +116,7 @@ const saveChanges = async () => {
 
     // Reload entries list with current group filter
     const currentGroupId = route.params.groupId as string
-    await knowledgeBaseStore.fetchEntries(appStore.state.selectedTenant, {
+    await knowledgeBaseStore.fetchEntries(userStore.state.selectedTenant, {
       knowledgeGroupId: currentGroupId || undefined,
     })
 

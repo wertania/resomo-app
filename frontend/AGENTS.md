@@ -2,6 +2,82 @@
 
 A vue SPA without SSR.
 
+## Testing
+Currently no unit tests configured. Vitest is referenced but not implemented.
+
+## State Management
+- Pinia stores in `src/stores/`
+- Main stores: `authStore`, `user`, `settings`, `toast`
+
+## Composables
+Reusable logic is in `src/composables/`.
+
+## API Communication
+Always use the Fetcher utility from `src/utils/fetcher.ts`
+
+## Routing
+- Vue Router in `src/router/index.ts`
+- Views in `src/views/`
+
+## Type Definitions
+- Shared types in `src/types/`
+- Auto-generated: `auto-imports.d.ts`, `components.d.ts`
+
+## Imports
+
+The most imports in Frontend components are auto-imported in `src/auto-imports.d.ts`. This is done by unplugin-auto-import.
+
+All "vue" imports are auto-imported in `src/auto-imports.d.ts`. This is done by unplugin-auto-import.
+
+All Volt components are auto-imported in `src/components.d.ts`. This is done by unplugin-vue-components.
+
+All components in folder "components" are auto-imported in `src/components.d.ts`. This is done by unplugin-vue-components.
+
+All Icons must be imported explicitly. Example:
+import IconFaSolidPlus from '~icons/fa-solid/plus';
+
+## Confirm-Dialog
+
+Important: Never include the <ConfirmDialog> component in the template. This is done in App.vue globally.
+
+Example usage:
+```vue
+<template>
+    <div class="card flex justify-center">
+        <Button @click="confirmSave()" label="Save" />
+    </div>
+ </template>
+
+<script setup lang="ts">
+ import { useConfirm } from 'primevue/useconfirm';
+ import { useToast } from 'primevue/usetoast';
+
+const confirm = useConfirm();
+ const toast = useToast();
+
+const confirmSave = () => {
+    confirm.require({
+        message: 'Are you sure you want to proceed?',
+        header: 'Confirmation',
+        rejectProps: {
+            label: 'Cancel',
+            severity: 'secondary',
+            outlined: true
+        },
+        acceptProps: {
+            label: 'Confirm'
+        },
+        accept: () => {
+            toast.add({ severity: 'info', summary: 'Confirmed', detail: 'You have accepted', life: 3000 });
+        },
+        reject: () => {
+            toast.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
+        }
+    });
+ };
+ </script>
+```
+
 ## styling
 
 Tailwind CSS v4 is used. The global styles are in `src/assets/base.css`.
@@ -41,4 +117,6 @@ Never use PrimeVue icons via CSS or font-awesome icons by CSS!
 Icons are used by unplugin-icons.
 example: `import IconAccessibility from '~icons/carbon/accessibility`
 
-> https://github.com/unplugin/unplugin-icons
+- [unplugin-icons](https://github.com/unplugin/unplugin-icons)
+- [icones.js.org](https://icones.js.org/)
+- [icones.js.org/collection/line-md?s=my+search](https://icones.js.org/collection/line-md?s=my+search)

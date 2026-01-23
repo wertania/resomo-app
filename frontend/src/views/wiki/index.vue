@@ -6,32 +6,76 @@
     >
       <!-- Header -->
       <div
-        class="flex items-center justify-between border-b border-surface-200 bg-surface-50 px-4 py-3 dark:border-surface-700 dark:bg-surface-900"
+        class="flex h-16 items-center justify-between border-b border-surface-200 px-4 dark:border-surface-700"
       >
         <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0">
           {{ $t('Wiki.title') || 'Wiki' }}
         </h2>
-        <Button
-          severity="success"
-          size="small"
-          class="h-8 w-8"
-          @click="handleAddRoot"
-          :disabled="!tenantId"
-        >
-          <IconAdd class="h-4 w-4" />
-        </Button>
       </div>
 
       <!-- Tree Container -->
       <div class="flex-1 overflow-y-auto p-3">
-        <WikiTree
-          :items="store.treeData"
-          :selected-id="store.selectedText?.id || null"
-          @select="handleSelectText"
-          @add-child="handleAddChild"
-          @edit="handleEdit"
-          @delete="handleDelete"
-        />
+        <!-- Personal Knowledge Section -->
+        <div class="mb-6">
+          <div class="mb-2 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-sm font-semibold text-surface-700 dark:text-surface-300">
+              <IconUser class="h-4 w-4" />
+              <span>{{ $t('Wiki.personal') || 'Persönlich' }}</span>
+            </div>
+            <Button
+              severity="success"
+              size="small"
+              text
+              class="h-8 w-8"
+              @click="handleAddRoot(false)"
+              :disabled="!tenantId"
+              :title="$t('Wiki.addPersonalEntry') || 'Add personal entry'"
+            >
+              <IconAdd class="h-4 w-4" />
+            </Button>
+          </div>
+          <WikiTree
+            :items="store.personalTreeData"
+            :selected-id="store.selectedText?.id || null"
+            :is-tenant-wide="false"
+            @select="handleSelectText"
+            @add-child="(id) => handleAddChild(id, false)"
+            @edit="handleEdit"
+            @delete="handleDelete"
+            @move="handleMove"
+          />
+        </div>
+
+        <!-- Company Knowledge Section -->
+        <div>
+          <div class="mb-2 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-sm font-semibold text-surface-700 dark:text-surface-300">
+              <IconCompany class="h-4 w-4" />
+              <span>{{ $t('Wiki.company') || 'Unternehmen' }}</span>
+            </div>
+            <Button
+              severity="success"
+              size="small"
+              text
+              class="h-8 w-8"
+              @click="handleAddRoot(true)"
+              :disabled="!tenantId"
+              :title="$t('Wiki.addCompanyEntry') || 'Add company entry'"
+            >
+              <IconAdd class="h-4 w-4" />
+            </Button>
+          </div>
+          <WikiTree
+            :items="store.companyTreeData"
+            :selected-id="store.selectedText?.id || null"
+            :is-tenant-wide="true"
+            @select="handleSelectText"
+            @add-child="(id) => handleAddChild(id, true)"
+            @edit="handleEdit"
+            @delete="handleDelete"
+            @move="handleMove"
+          />
+        </div>
       </div>
     </div>
 
@@ -40,7 +84,7 @@
       <!-- Editor Header -->
       <div
         v-if="store.selectedText"
-        class="flex items-center justify-between border-b border-surface-200 bg-white px-6 py-4 dark:border-surface-700 dark:bg-surface-800"
+        class="flex h-16 items-center justify-between border-b border-surface-200 bg-white px-6 dark:border-surface-700 dark:bg-surface-800"
       >
         <div class="flex-1 min-w-0 mr-4">
           <input
@@ -52,6 +96,55 @@
           />
         </div>
         <div class="flex items-center gap-2">
+          <!-- Apply to Digital Twin Button (only for protocol entries) -->
+          <Button
+            v-if="isProtocolEntry && settingsStore.getDigitalTwinEntryPoint()"
+            severity="help"
+            size="small"
+            outlined
+            class="h-9"
+            @click="handleApplyToDigitalTwin"
+            :disabled="store.loading || isProcessingProtocol"
+            :loading="isProcessingProtocol"
+            :title="$t('Wiki.applyToDigitalTwin') || 'Apply to Digital Twin'"
+          >
+            <IconBrain class="h-4 w-4 mr-1" />
+            <span class="text-xs">{{ $t('Wiki.applyToDigitalTwin') || 'Apply to Digital Twin' }}</span>
+          </Button>
+          <Button
+            v-if="isPersonalEntry"
+            :severity="isDigitalTwinEntry ? 'success' : 'warning'"
+            size="small"
+            :outlined="!isDigitalTwinEntry"
+            class="h-9 w-9"
+            @click="handleSetDigitalTwin"
+            :disabled="store.loading || !store.selectedText"
+            :title="isDigitalTwinEntry ? ($t('Wiki.removeDigitalTwin') || 'Remove Digital Twin') : ($t('Wiki.setDigitalTwin') || 'Set as Digital Twin')"
+          >
+            <IconDigitalTwin class="h-4 w-4" />
+          </Button>
+          <Button
+            severity="info"
+            size="small"
+            outlined
+            class="h-9 w-9"
+            @click="handleCopyWikiLink"
+            :disabled="store.loading || !store.selectedText"
+            :title="$t('Wiki.copyLink') || 'Copy Wiki Link'"
+          >
+            <IconLink class="h-4 w-4" />
+          </Button>
+          <Button
+            severity="success"
+            size="small"
+            outlined
+            class="h-9 w-9"
+            @click="handleSmartEdit"
+            :disabled="store.loading || !store.selectedText"
+            :title="$t('Wiki.smartEdit') || 'Smart Edit'"
+          >
+            <IconMagic class="h-4 w-4" />
+          </Button>
           <Button
             severity="danger"
             size="small"
@@ -117,25 +210,70 @@
         </div>
       </div>
     </div>
+
+    <!-- Smart Edit Dialog -->
+    <SmartEditDialog
+      v-model:visible="showSmartEditDialog"
+      :entry-id="store.selectedText?.id || null"
+      @changes-applied="handleChangesApplied"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useKnowledgeTextsStore } from '@/stores/knowledgeTexts'
-import { useApp } from '@/stores/main'
+import { useUser } from '@/stores/user'
 import WikiTree from '@/components/wiki/WikiTree.vue'
 import MarkdownEditor from '@/components/knowledge/MarkdownEditor.vue'
-import IconAdd from '~icons/mdi/plus'
-import IconSave from '~icons/mdi/content-save'
-import IconDocument from '~icons/mdi/file-document-outline'
-import IconDelete from '~icons/mdi/delete-outline'
+import SmartEditDialog from '@/components/wiki/SmartEditDialog.vue'
+import { fetcher } from '@/utils/fetcher'
+import IconAdd from '~icons/line-md/plus'
+import IconSave from '~icons/line-md/clipboard-check'
+import IconDocument from '~icons/line-md/file-document'
+import IconDelete from '~icons/line-md/trash'
+import IconLink from '~icons/line-md/link'
+import IconMagic from '~icons/line-md/edit'
+import IconUser from '~icons/line-md/account'
+import IconCompany from '~icons/line-md/home'
+import IconDigitalTwin from '~icons/line-md/star'
+import IconBrain from '~icons/line-md/lightbulb'
+import { useToast } from 'primevue/usetoast'
+import { useI18n } from 'vue-i18n'
+import { useSettingsStore } from '@/stores/settings'
 
 const store = useKnowledgeTextsStore()
-const appStore = useApp()
+const userStore = useUser()
+const settingsStore = useSettingsStore()
+const toast = useToast()
+const { t } = useI18n()
 
-const tenantId = computed(() => appStore.state.selectedTenant)
+const tenantId = computed(() => userStore.state.selectedTenant)
+const userId = computed(() => userStore.state.user?.id || null)
 const editTitle = ref('')
 const editText = ref('')
+const showSmartEditDialog = ref(false)
+
+// Check if current entry is personal (not tenant-wide)
+const isPersonalEntry = computed(() => {
+  return store.selectedText && !store.selectedText.tenantWide
+})
+
+// Check if current entry is set as digital twin
+const isDigitalTwinEntry = computed(() => {
+  if (!store.selectedText) return false
+  return settingsStore.getDigitalTwinEntryPoint() === store.selectedText.id
+})
+
+// Check if current entry is a protocol (based on title pattern)
+// Pattern: yyyy-mm-dd_hh-mm_protocol
+const isProtocolEntry = computed(() => {
+  if (!store.selectedText) return false
+  const protocolPattern = /^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}_protocol$/
+  return protocolPattern.test(store.selectedText.title)
+})
+
+// Processing state for apply to digital twin
+const isProcessingProtocol = ref(false)
 
 // Watch for tenant change
 watch(
@@ -143,6 +281,8 @@ watch(
   async (newTenantId) => {
     if (newTenantId) {
       await store.fetchTexts(newTenantId)
+      // Load user settings when tenant changes
+      await settingsStore.loadUserSettings()
     }
   },
   { immediate: true },
@@ -167,17 +307,25 @@ watch(
 )
 
 // Handle add root entry (or child if an entry is selected)
-const handleAddRoot = async () => {
+const handleAddRoot = async (isTenantWide: boolean = true) => {
   if (!tenantId.value) return
 
-  // If an entry is selected, make the new entry a child of it
-  const parentId = store.selectedText?.id || null
+  // If an entry is selected, create a child under it
+  if (store.selectedText) {
+    return handleAddChild(store.selectedText.id, isTenantWide)
+  }
 
-  const newText = await store.createText(tenantId.value, {
-    title: 'New Entry',
-    text: 'Start writing...',
-    parentId,
-  })
+  // Otherwise create a root entry
+  const newText = await store.createText(
+    tenantId.value, 
+    {
+      title: 'New Entry',
+      text: '',
+      parentId: null,
+    },
+    isTenantWide,
+    userId.value,
+  )
 
   if (newText) {
     await store.selectText(newText.id, tenantId.value)
@@ -185,14 +333,19 @@ const handleAddRoot = async () => {
 }
 
 // Handle add child entry
-const handleAddChild = async (parentId: string) => {
+const handleAddChild = async (parentId: string, isTenantWide: boolean = true) => {
   if (!tenantId.value) return
 
-  const newText = await store.createText(tenantId.value, {
-    title: 'New Entry',
-    text: 'Start writing...',
-    parentId,
-  })
+  const newText = await store.createText(
+    tenantId.value,
+    {
+      title: 'New Entry',
+      text: '',
+      parentId,
+    },
+    isTenantWide,
+    userId.value,
+  )
 
   if (newText) {
     await store.selectText(newText.id, tenantId.value)
@@ -241,6 +394,158 @@ const handleSave = async () => {
     title: editTitle.value,
     text: editText.value,
   })
+}
+
+// Handle move entry via drag & drop
+const handleMove = (data: { itemId: string; newParentId: string | null; targetTenantWide: boolean }) => {
+  if (!tenantId.value) return
+  // When moving to personal, use current userId if entry doesn't have one
+  if (data.targetTenantWide) {
+    // Moving to company - userId should be null
+    store.moveText(tenantId.value, data.itemId, data.newParentId, data.targetTenantWide, null)
+  } else {
+    // Moving to personal - use current userId
+    store.moveText(tenantId.value, data.itemId, data.newParentId, data.targetTenantWide, userId.value ?? undefined)
+  }
+}
+
+// Handle copy wiki link
+const handleCopyWikiLink = async () => {
+  if (!tenantId.value || !store.selectedText) return
+
+  const baseUrl = window.location.origin
+  const wikiLink = `${baseUrl}/api/v1/tenant/${tenantId.value}/knowledge-wiki/${store.selectedText.id}?type=json`
+
+  try {
+    await navigator.clipboard.writeText(wikiLink)
+    toast.add({
+      severity: 'success',
+      summary: t('Wiki.linkCopied') || 'Link copied',
+      detail: t('Wiki.linkCopiedDetail') || 'Wiki link copied to clipboard',
+      life: 3000,
+    })
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: t('Wiki.linkCopyError') || 'Error copying link',
+      detail: t('Wiki.linkCopyErrorDetail') || 'Failed to copy link to clipboard',
+      life: 3000,
+    })
+  }
+}
+
+// Handle smart edit
+const handleSmartEdit = () => {
+  showSmartEditDialog.value = true
+}
+
+// Handle changes applied from smart edit
+const handleChangesApplied = async () => {
+  if (!tenantId.value || !store.selectedText) return
+  // Reload the current entry to show updated content
+  await store.selectText(store.selectedText.id, tenantId.value)
+}
+
+// Handle set as digital twin
+const handleSetDigitalTwin = async () => {
+  if (!store.selectedText) return
+
+  if (isDigitalTwinEntry.value) {
+    // Remove digital twin setting
+    await settingsStore.setDigitalTwinEntryPoint(null)
+    toast.add({
+      severity: 'info',
+      summary: t('Wiki.digitalTwinRemoved') || 'Digital Twin removed',
+      detail: t('Wiki.digitalTwinRemovedDetail') || 'This entry is no longer set as Digital Twin entry point',
+      life: 3000,
+    })
+  } else {
+    // Set as digital twin
+    await settingsStore.setDigitalTwinEntryPoint(store.selectedText.id)
+    toast.add({
+      severity: 'success',
+      summary: t('Wiki.digitalTwinSet') || 'Digital Twin set',
+      detail: t('Wiki.digitalTwinSetDetail') || 'This entry is now set as Digital Twin entry point',
+      life: 3000,
+    })
+  }
+}
+
+// Handle apply protocol to digital twin
+const handleApplyToDigitalTwin = async () => {
+  if (!store.selectedText || !tenantId.value) return
+
+  const entryPointId = settingsStore.getDigitalTwinEntryPoint()
+  if (!entryPointId) {
+    toast.add({
+      severity: 'warn',
+      summary: t('Wiki.noDigitalTwin') || 'No Digital Twin',
+      detail: t('Wiki.noDigitalTwinDetail') || 'Please set a Digital Twin entry point first',
+      life: 3000,
+    })
+    return
+  }
+
+  // Get the protocol text (use the original transcript from the content)
+  const protocolText = store.selectedText.text || editText.value
+  if (!protocolText) {
+    toast.add({
+      severity: 'warn',
+      summary: t('Wiki.noContent') || 'No Content',
+      detail: t('Wiki.noContentDetail') || 'The protocol has no content to process',
+      life: 3000,
+    })
+    return
+  }
+
+  isProcessingProtocol.value = true
+
+  try {
+    const response = await fetcher.post<{
+      success: boolean
+      processedFacts: number
+      updatedCategories: string[]
+      newCategories: string[]
+      errors: string[]
+    }>(`/api/v1/tenant/${tenantId.value}/digital-twin/process-protocol`, {
+      entryPointId,
+      protocol: protocolText,
+    })
+
+    if (response.success) {
+      const factCount = response.processedFacts || 0
+      const updatedCount = response.updatedCategories?.length || 0
+      const newCount = response.newCategories?.length || 0
+
+      toast.add({
+        severity: 'success',
+        summary: t('Wiki.protocolApplied') || 'Protocol Applied',
+        detail: t('Wiki.protocolAppliedDetail', { facts: factCount, updated: updatedCount, new: newCount }) 
+          || `${factCount} facts processed. ${updatedCount} categories updated, ${newCount} new categories created.`,
+        life: 5000,
+      })
+
+      // Show errors if any
+      if (response.errors && response.errors.length > 0) {
+        toast.add({
+          severity: 'warn',
+          summary: t('Wiki.protocolWarnings') || 'Warnings',
+          detail: response.errors.join(', '),
+          life: 5000,
+        })
+      }
+    }
+  } catch (error) {
+    console.error('Error applying protocol to digital twin:', error)
+    toast.add({
+      severity: 'error',
+      summary: t('Wiki.protocolApplyError') || 'Error',
+      detail: t('Wiki.protocolApplyErrorDetail') || 'Failed to apply protocol to digital twin',
+      life: 3000,
+    })
+  } finally {
+    isProcessingProtocol.value = false
+  }
 }
 </script>
 

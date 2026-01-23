@@ -3,6 +3,8 @@ import * as robotTasksSchema from "./db/schema";
 import defineChatRoutes from "./routes/tenant/[tenantId]/chat";
 import defineTranscriptionRoutes from "./routes/tenant/[tenantId]/transcription";
 import { ensureDefaultTenantAndAddUser } from "./lib/usermanagement";
+import defineDigitalTwinRoutes from "./routes/tenant/[tenantId]/digital-twin";
+import { defineUserSettingsRoutes } from "./routes/tenant/[tenantId]/user-settings";
 
 const server = defineServer({
   port: 3100,
@@ -15,12 +17,14 @@ const server = defineServer({
   customDbSchema: {
     ...robotTasksSchema,
   },
-  customHonoApps: [
+  customHonoAppsWithAuth: [
     {
       baseRoute: "",
       app: (app) => {
         defineChatRoutes(app);
         defineTranscriptionRoutes(app);
+        defineDigitalTwinRoutes(app);
+        defineUserSettingsRoutes(app);
       },
     },
   ],

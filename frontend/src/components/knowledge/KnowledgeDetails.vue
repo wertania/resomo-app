@@ -126,14 +126,14 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { useKnowledgeBaseStore } from '@/stores/knowledgeBase'
-import { useApp } from '@/stores/main'
+import { useUser } from '@/stores/user'
 import { fetcher } from '@/utils/fetcher'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
 import MarkdownEditor from '@/components/knowledge/MarkdownEditor.vue'
 
 const knowledgeStore = useKnowledgeBaseStore()
-const appStore = useApp()
+const userStore = useUser()
 const toast = useToast()
 const { t } = useI18n()
 
@@ -147,14 +147,14 @@ const savingText = ref(false)
 // Refresh the entry details when assignments are updated
 const refreshEntryDetails = async () => {
   const entryId = knowledgeStore.selectedEntry?.entry?.id
-  if (!entryId || !appStore.state.selectedTenant) return
+  if (!entryId || !userStore.state.selectedTenant) return
 
   const route = useRoute()
   const currentGroupId = route.params.groupId as string
 
   // Refresh entry details to get updated data
   await knowledgeStore.showEntryDetails(
-    appStore.state.selectedTenant,
+    userStore.state.selectedTenant,
     entryId,
   )
 
@@ -198,7 +198,7 @@ const cancelEditText = () => {
 const saveText = async () => {
   if (
     !knowledgeStore.selectedEntry?.entry?.id ||
-    !appStore.state.selectedTenant
+    !userStore.state.selectedTenant
   ) {
     return
   }
@@ -206,7 +206,7 @@ const saveText = async () => {
   savingText.value = true
   try {
     await fetcher.put(
-      `/api/v1/tenant/${appStore.state.selectedTenant}/knowledge/entries/${knowledgeStore.selectedEntry.entry.id}/text`,
+      `/api/v1/tenant/${userStore.state.selectedTenant}/knowledge/entries/${knowledgeStore.selectedEntry.entry.id}/text`,
       {
         text: editingText.value,
       },
@@ -214,7 +214,7 @@ const saveText = async () => {
 
     // Refresh the entry details
     await knowledgeStore.showEntryDetails(
-      appStore.state.selectedTenant,
+      userStore.state.selectedTenant,
       knowledgeStore.selectedEntry.entry.id,
     )
 

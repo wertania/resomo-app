@@ -1,12 +1,10 @@
 import { defineStore } from 'pinia'
 import type { KnowledgeChunk } from '@/types/knowledge-chunk'
-import { useApp } from '@/stores/main'
 import { fetcher } from '@/utils/fetcher'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
 
 export const useKnowledgeChunksStore = defineStore('knowledgeChunks', () => {
-  const appStore = useApp()
   const toast = useToast()
   const { t } = useI18n()
 

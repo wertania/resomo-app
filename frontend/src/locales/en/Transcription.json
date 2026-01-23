@@ -1,0 +1,9 @@
+{
+  "recording": "Recording...",
+  "transcribing": "Transcribing...",
+  "clickToRecord": "Click to record",
+  "result": "Transcription",
+  "microphoneError": "Could not access microphone",
+  "transcriptionError": "Transcription failed"
+}
+

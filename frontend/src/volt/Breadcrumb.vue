@@ -44,7 +44,7 @@ import Breadcrumb, { type BreadcrumbPassThroughOptions, type BreadcrumbProps } f
 import { ref } from 'vue';
 import { ptViewMerge } from './utils';
 import type { MenuItem } from 'primevue/menuitem';
-import IconChevronRight from '~icons/mdi/chevron-right';
+import IconChevronRight from '~icons/line-md/chevron-right';
 
 interface Props extends /* @vue-ignore */ BreadcrumbProps {
     model?: MenuItem[];

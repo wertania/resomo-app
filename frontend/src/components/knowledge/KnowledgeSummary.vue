@@ -50,14 +50,14 @@
 </template>
 <script lang="ts" setup>
 import { useKnowledgeBaseStore } from '@/stores/knowledgeBase'
-import { useApp } from '@/stores/main'
+import { useUser } from '@/stores/user'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
 import { fetcher } from '@/utils/fetcher'
 
 const toast = useToast()
 const { t } = useI18n()
-const appStore = useApp()
+const userStore = useUser()
 const knowledgeStore = useKnowledgeBaseStore()
 
 // Emit event to close the dialog
@@ -84,14 +84,14 @@ const handleCancel = () => {
 }
 
 const save = async () => {
-  if (!appStore.state.selectedTenant || !knowledgeStore.selectedEntry?.entry.id)
+  if (!userStore.state.selectedTenant || !knowledgeStore.selectedEntry?.entry.id)
     return
 
   saving.value = true
 
   try {
     await fetcher.put(
-      `/api/v1/tenant/${appStore.state.selectedTenant}/knowledge/entries/${knowledgeStore.selectedEntry.entry.id}`,
+      `/api/v1/tenant/${userStore.state.selectedTenant}/knowledge/entries/${knowledgeStore.selectedEntry.entry.id}`,
       {
         abstract: localInputs.value.abstract?.trim(),
         description: localInputs.value.description?.trim(),

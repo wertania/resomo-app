@@ -1,0 +1,18 @@
+{
+  "protocol": "Protokoll",
+  "voiceInput": "Sprache",
+  "textInput": "Text",
+  "textPlaceholder": "Gib hier dein Protokoll ein...",
+  "preview": "Vorschau",
+  "submit": "Absenden",
+  "submitted": "Protokoll gespeichert",
+  "success": "Erfolg",
+  "error": "Fehler",
+  "protocolCreated": "Das Protokoll wurde erfolgreich erstellt und zusammengefasst.",
+  "applyToDigitalTwin": "Im Digital Twin anwenden",
+  "protocolCreatedAndApplied": "Protokoll erstellt und {facts} Fakten im Digital Twin verarbeitet.",
+  "appliedToDigitalTwin": "{facts} Fakten im Digital Twin verarbeitet",
+  "processingWarnings": "Verarbeitungswarnungen",
+  "processingError": "Verarbeitungsfehler",
+  "processingErrorDetail": "Das Protokoll wurde gespeichert, aber die Anwendung auf den Digital Twin ist fehlgeschlagen."
+}

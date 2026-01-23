@@ -1,0 +1,19 @@
+{
+  "title": "User Profile",
+  "email": "Email",
+  "personalInfo": "Personal information",
+  "firstname": "First name",
+  "surname": "Last name",
+  "updateButton": "Update profile",
+  "imageAlt": "Profile image",
+  "changeImage": "Change image",
+  "dropzoneText": "Drop image here or click to select",
+  "security": "Security",
+  "securityDescription": "Manage your security settings",
+  "fetchError": "Error loading profile",
+  "updateSuccess": "Profile successfully updated",
+  "updateError": "Error updating profile",
+  "imageUploadSuccess": "Profile image successfully uploaded",
+  "imageUploadError": "Error uploading profile image"
+}
+

@@ -1,0 +1,56 @@
+{
+  "add": "Add",
+  "back": "Back",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "confirmation": "Confirmation",
+  "select": "Select",
+  "create": "Create",
+  "success": "Success",
+  "error": "Error",
+  "delete": "Delete",
+  "remove": "Remove",
+  "close": "Close",
+  "name": "Name",
+  "next": "Next",
+  "description": "Description",
+  "save": "Save",
+  "edit": "Edit",
+  "update": "Update",
+  "updated": "Updated",
+  "actions": "Actions",
+  "required": "This field is required",
+  "yes": "Yes",
+  "no": "No",
+  "updateMessages": {
+    "success": "Successfully updated",
+    "error": "Update failed"
+  },
+  "messages": {
+    "success": "Successfully deleted",
+    "error": "Delete failed"
+  },
+  "sync": "Sync",
+  "justNow": "Just now",
+  "minutesAgo": "{count} minute(s) ago",
+  "hoursAgo": "{count} hour(s) ago",
+  "yesterday": "Yesterday",
+  "daysAgo": "{count} day(s) ago",
+  "unselectAll": "Unselect all",
+  "view": "View",
+  "drop": "Delete",
+  "alwaysEnabled": "Always enabled",
+  "details": "Details",
+  "search": "Search",
+  "copyMarkdownLink": "Copy Markdown Link",
+  "copyMarkdownContent": "Copy Markdown Content",
+  "linkCopied": "Link copied to clipboard",
+  "contentCopied": "Content copied to clipboard",
+  "copyFailed": "Failed to copy",
+  "Settings": {
+    "errorLoading": "Error loading settings",
+    "errorSaving": "Error saving settings",
+    "saved": "Settings saved"
+  }
+}
+

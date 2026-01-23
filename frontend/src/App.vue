@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useApp } from '@/stores/main'
+import { useUser } from '@/stores/user'
 
-const appStore = useApp()
+const userStore = useUser()
 
 onMounted(async () => {
-  await appStore.init()
+  await userStore.init()
 })
 </script>
 

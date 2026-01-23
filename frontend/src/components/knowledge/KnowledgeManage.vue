@@ -120,13 +120,13 @@
 <script setup lang="ts">
 import type { KnowledgeEntry } from '@/types/knowledge'
 import type { KnowledgeGroup } from '@/types/knowledgeGroup'
-import IconFluentCheckboxUnchecked24Regular from '~icons/mdi/checkbox-blank-outline'
-import IconFluentEye24Regular from '~icons/mdi/eye'
-import IconFluentEdit24Regular from '~icons/mdi/pencil'
-import IconFluentDelete24Regular from '~icons/mdi/delete'
-import IconFluentDocument24Regular from '~icons/mdi/file-document-outline'
+import IconFluentCheckboxUnchecked24Regular from '~icons/line-md/square'
+import IconFluentEye24Regular from '~icons/line-md/search'
+import IconFluentEdit24Regular from '~icons/line-md/pencil'
+import IconFluentDelete24Regular from '~icons/line-md/trash'
+import IconFluentDocument24Regular from '~icons/line-md/file-document'
 import { useKnowledgeBaseStore } from '@/stores/knowledgeBase'
-import { useApp } from '@/stores/main'
+import { useUser } from '@/stores/user'
 
 const {
   readonly = false,
@@ -145,10 +145,10 @@ const {
   selectedGroup?: KnowledgeGroup | null
 }>()
 
-const app = useApp()
+const userStore = useUser()
 const knowledgeStore = useKnowledgeBaseStore()
 
-const tenantId = computed(() => app.state.selectedTenant)
+const tenantId = computed(() => userStore.state.selectedTenant)
 
 // Use props if provided, otherwise use the store values
 const loading = computed(() => propLoading || knowledgeStore.loading)

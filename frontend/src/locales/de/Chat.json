@@ -1,0 +1,21 @@
+{
+  "title": "KI-Chat",
+  "subtitle": "Chat mit Mistral Large",
+  "noMessages": "Beginnen Sie eine Unterhaltung...",
+  "greetingPrefix": "Hallo, {name}.",
+  "greetingSuffix": "Was kann ich für Sie tun?",
+  "inputPlaceholder": "Stelle irgendeine Frage",
+  "inputPlaceholderWithMessages": "Nachricht eingeben...",
+  "send": "Senden",
+  "openChat": "Chat öffnen",
+  "toolInputStreaming": "Vorbereiten...",
+  "toolExecuting": "Wird ausgeführt...",
+  "toolInput": "Eingabe",
+  "toolOutput": "Ergebnis",
+  "toolError": "Fehler",
+  "toolUnknownError": "Ein unbekannter Fehler ist aufgetreten",
+  "toolStateStreaming": "Streamen",
+  "toolStateExecuting": "Läuft",
+  "toolStateCompleted": "Abgeschlossen",
+  "toolStateError": "Fehler"
+}

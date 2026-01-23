@@ -1,0 +1,18 @@
+{
+  "protocol": "Protocol",
+  "voiceInput": "Voice",
+  "textInput": "Text",
+  "textPlaceholder": "Enter your protocol here...",
+  "preview": "Preview",
+  "submit": "Submit",
+  "submitted": "Protocol saved",
+  "success": "Success",
+  "error": "Error",
+  "protocolCreated": "The protocol was successfully created and summarized.",
+  "applyToDigitalTwin": "Apply to Digital Twin",
+  "protocolCreatedAndApplied": "Protocol created and {facts} facts processed in Digital Twin.",
+  "appliedToDigitalTwin": "{facts} facts processed in Digital Twin",
+  "processingWarnings": "Processing Warnings",
+  "processingError": "Processing Error",
+  "processingErrorDetail": "The protocol was saved, but applying to Digital Twin failed."
+}

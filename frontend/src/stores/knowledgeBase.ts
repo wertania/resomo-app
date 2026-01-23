@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { useApp } from '@/stores/main'
+import { useUser } from '@/stores/user'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { useI18n } from 'vue-i18n'
@@ -11,7 +11,7 @@ import type {
 } from '@/types/knowledge'
 
 export const useKnowledgeBaseStore = defineStore('knowledgeBase', () => {
-  const appStore = useApp()
+  const userStore = useUser()
   const toast = useToast()
   const confirm = useConfirm()
   const { t } = useI18n()
@@ -278,7 +278,7 @@ export const useKnowledgeBaseStore = defineStore('knowledgeBase', () => {
     console.warn('saveChatbotTemplate is disabled due to missing dependencies')
     /*
     try {
-      const tenantId = appStore.state.selectedTenant;
+      const tenantId = userStore.state.selectedTenant;
       const missingFields = [];
       if (!chatbotName.value.trim()) missingFields.push(t('Knowledge.manage.chatbotName'));
       if (!chatbotDescription.value.trim()) missingFields.push(t('Knowledge.manage.chatbotDescription'));

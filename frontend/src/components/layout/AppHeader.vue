@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import IconFaSolidArrowLeft from '~icons/fa-solid/arrow-left'
+import IconFaSolidArrowLeft from '~icons/line-md/arrow-left'
 const props = defineProps({
   header: {
     type: String,

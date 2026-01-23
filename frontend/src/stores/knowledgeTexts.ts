@@ -7,17 +7,14 @@ import { fetcher } from '@/utils/fetcher'
 
 export interface KnowledgeText {
   id: string
-  documentId: string // All versions share this ID
   tenantId: string
   tenantWide: boolean
   teamId: string | null
   userId: string | null
-  parentId: string | null // Wiki hierarchy only
+  parentId: string | null // Wiki hierarchy - references parent's id
   text?: string // Optional, only loaded when fetching single entry
   title: string
   meta: Record<string, any>
-  version: number
-  isLatest: boolean // True for current version
   hidden: boolean // True for system entries
   createdAt: string
   updatedAt: string
@@ -60,26 +57,26 @@ export const useKnowledgeTextsStore = defineStore('knowledgeTexts', () => {
   const loadingText = ref(false)
   const selectedText = ref<KnowledgeText | null>(null)
   const treeData = ref<KnowledgeText[]>([])
+  const personalTreeData = ref<KnowledgeText[]>([])
+  const companyTreeData = ref<KnowledgeText[]>([])
 
-  // Build tree structure from flat array
+  // Build tree structure from flat array with alphabetical sorting
   const buildTree = (flatTexts: KnowledgeText[]): KnowledgeText[] => {
     const mapById = new Map<string, KnowledgeText>()
-    const mapByDocumentId = new Map<string, KnowledgeText>()
     const roots: KnowledgeText[] = []
 
-    // First pass: create maps (by id and by documentId)
+    // First pass: create map by id
     flatTexts.forEach((text) => {
       const node = { ...text, children: [] }
       mapById.set(text.id, node)
-      mapByDocumentId.set(text.documentId, node)
     })
 
     // Second pass: build tree
-    // parentId now contains the documentId of the parent (not id!)
+    // parentId now contains the id of the parent (not documentId!)
     flatTexts.forEach((text) => {
       const node = mapById.get(text.id)!
-      if (text.parentId && mapByDocumentId.has(text.parentId)) {
-        const parent = mapByDocumentId.get(text.parentId)!
+      if (text.parentId && mapById.has(text.parentId)) {
+        const parent = mapById.get(text.parentId)!
         if (!parent.children) parent.children = []
         parent.children.push(node)
       } else {
@@ -87,7 +84,25 @@ export const useKnowledgeTextsStore = defineStore('knowledgeTexts', () => {
       }
     })
 
-    return roots
+    // Sort function for alphabetical ordering (case-insensitive)
+    const sortAlphabetically = (nodes: KnowledgeText[]): KnowledgeText[] => {
+      return nodes.sort((a, b) => 
+        a.title.localeCompare(b.title, undefined, { sensitivity: 'base' })
+      )
+    }
+
+    // Recursively sort all children
+    const sortTreeRecursively = (nodes: KnowledgeText[]): KnowledgeText[] => {
+      const sorted = sortAlphabetically(nodes)
+      sorted.forEach((node) => {
+        if (node.children && node.children.length > 0) {
+          node.children = sortTreeRecursively(node.children)
+        }
+      })
+      return sorted
+    }
+
+    return sortTreeRecursively(roots)
   }
 
   // Fetch all knowledge texts
@@ -100,6 +115,15 @@ export const useKnowledgeTextsStore = defineStore('knowledgeTexts', () => {
       const serverTexts = await fetcher.get<KnowledgeText[]>(url)
 
       texts.value = serverTexts
+      
+      // Split texts into personal and company
+      const personalTexts = serverTexts.filter(t => !t.tenantWide)
+      const companyTexts = serverTexts.filter(t => t.tenantWide)
+      
+      personalTreeData.value = buildTree(personalTexts)
+      companyTreeData.value = buildTree(companyTexts)
+      
+      // Keep old treeData for backwards compatibility
       treeData.value = buildTree(serverTexts)
     } catch (error) {
       console.error('Error fetching texts:', error)
@@ -117,6 +141,8 @@ export const useKnowledgeTextsStore = defineStore('knowledgeTexts', () => {
   const createText = async (
     tenantId: string,
     data: Omit<KnowledgeTextInsert, 'tenantId'>,
+    tenantWide: boolean = true,
+    userId?: string | null,
   ): Promise<KnowledgeText | null> => {
     try {
       loading.value = true
@@ -124,6 +150,8 @@ export const useKnowledgeTextsStore = defineStore('knowledgeTexts', () => {
       const newText = await fetcher.post<KnowledgeText>(url, {
         tenantId,
         ...data,
+        tenantWide: tenantWide,
+        userId: tenantWide ? null : userId,
       })
 
       await fetchTexts(tenantId)
@@ -158,9 +186,15 @@ export const useKnowledgeTextsStore = defineStore('knowledgeTexts', () => {
     try {
       loading.value = true
       const url = `/api/v1/tenant/${tenantId}/knowledge/texts/${id}`
+      
+      // Get the current text to preserve tenantWide and userId
+      const currentText = texts.value.find(t => t.id === id)
+      
       const updatedText = await fetcher.put<KnowledgeText>(url, {
         tenantId,
         ...data,
+        tenantWide: currentText?.tenantWide ?? true,
+        userId: currentText?.userId ?? null,
       })
 
       await fetchTexts(tenantId)
@@ -276,12 +310,80 @@ export const useKnowledgeTextsStore = defineStore('knowledgeTexts', () => {
     return texts.value.find((t) => t.id === id) || null
   }
 
+  // Move text to a new parent (or to root if newParentId is null)
+  const moveText = async (
+    tenantId: string,
+    id: string,
+    newParentId: string | null,
+    targetTenantWide: boolean,
+    targetUserId?: string | null,
+  ): Promise<KnowledgeText | null> => {
+    try {
+      loading.value = true
+      const url = `/api/v1/tenant/${tenantId}/knowledge/texts/${id}`
+      
+      // Get the current text
+      const currentText = texts.value.find(t => t.id === id)
+      
+      // If moving to a parent, verify the parent's tenantWide matches targetTenantWide
+      if (newParentId) {
+        const newParent = texts.value.find(t => t.id === newParentId)
+        if (newParent && newParent.tenantWide !== targetTenantWide) {
+          toast.add({
+            severity: 'warn',
+            summary: t('Wiki.moveFailed') || 'Move failed',
+            detail: t('Wiki.cannotMoveBetweenTypes') || 'Cannot move between personal and company knowledge',
+            life: 3000,
+          })
+          return null
+        }
+      }
+      
+      // Update tenantWide based on target tree, and userId accordingly
+      // If moving to tenant-wide (company), userId should be null
+      // If moving to personal, use targetUserId (current user) if provided, otherwise preserve existing userId
+      const finalUserId = targetTenantWide 
+        ? null 
+        : (targetUserId ?? currentText?.userId ?? null)
+      
+      const updatedText = await fetcher.put<KnowledgeText>(url, {
+        tenantId,
+        parentId: newParentId,
+        tenantWide: targetTenantWide,
+        userId: finalUserId,
+      })
+
+      await fetchTexts(tenantId)
+
+      toast.add({
+        severity: 'success',
+        summary: t('Wiki.textMoved') || 'Wiki entry moved',
+        life: 3000,
+      })
+
+      return updatedText
+    } catch (error) {
+      console.error('Error moving text:', error)
+      toast.add({
+        severity: 'error',
+        summary: t('Wiki.errorMovingText') || 'Error moving wiki entry',
+        detail: error + '',
+        life: 3000,
+      })
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     texts,
     loading,
     loadingText,
     selectedText,
     treeData,
+    personalTreeData,
+    companyTreeData,
     fetchTexts,
     fetchTextById,
     createText,
@@ -289,6 +391,7 @@ export const useKnowledgeTextsStore = defineStore('knowledgeTexts', () => {
     deleteText,
     selectText,
     findTextById,
+    moveText,
   }
 })
 

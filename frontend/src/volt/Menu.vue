@@ -2,7 +2,7 @@
   <Menu
     ref="el"
     unstyled
-    :pt="theme"
+    :pt="mergedPt"
     :ptOptions="{
       mergeProps: ptViewMerge,
     }"
@@ -18,11 +18,12 @@ import Menu, {
   type MenuPassThroughOptions,
   type MenuProps,
 } from 'primevue/menu'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { twMerge } from 'tailwind-merge'
 import { ptViewMerge } from './utils'
 
 interface Props extends /* @vue-ignore */ MenuProps {}
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const theme = ref<MenuPassThroughOptions>({
   root: `bg-surface-0 dark:bg-surface-900 
@@ -49,6 +50,42 @@ const theme = ref<MenuPassThroughOptions>({
     leaveActiveClass: 'transition-opacity duration-100 ease-linear',
     leaveToClass: 'opacity-0',
   },
+})
+
+const mergePtValue = (baseValue: any, overrideValue: any) => {
+  if (!overrideValue) return baseValue
+
+  const baseClass =
+    typeof baseValue === 'string'
+      ? baseValue
+      : baseValue && typeof baseValue === 'object'
+        ? baseValue.class
+        : undefined
+
+  if (typeof overrideValue === 'string') {
+    return typeof baseClass === 'string' ? twMerge(baseClass, overrideValue) : overrideValue
+  }
+
+  if (overrideValue && typeof overrideValue === 'object') {
+    const overrideClass = (overrideValue as any).class
+    if (typeof baseClass === 'string' && typeof overrideClass === 'string') {
+      return { ...overrideValue, class: twMerge(baseClass, overrideClass) }
+    }
+  }
+
+  return overrideValue
+}
+
+const mergedPt = computed<MenuPassThroughOptions>(() => {
+  const override = props.pt as any
+  if (!override || typeof override !== 'object') return theme.value
+
+  const result: any = { ...theme.value }
+  for (const [key, val] of Object.entries(override)) {
+    result[key] = mergePtValue((theme.value as any)[key], val)
+  }
+
+  return result
 })
 
 const el = ref()

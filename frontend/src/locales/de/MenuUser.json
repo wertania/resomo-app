@@ -4,6 +4,9 @@
   "logout": "Abmelden",
   "language": "Sprache",
   "german": "Deutsch",
-  "english": "Englisch"
+  "english": "Englisch",
+  "tenants": "Mandanten",
+  "teams": "Teams",
+  "tokens": "Tokens"
 }
 

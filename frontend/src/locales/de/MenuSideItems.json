@@ -1,12 +1,15 @@
 {
   "dashboard": "Dashboard",
+  "general": "Allgemeines",
   "financialPlanning": "Finanzplanung",
   "financialDashboard": "Finanzdashboard",
+  "financialSettings": "Einstellungen",
   "roadmap": "Roadmap Planung",
   "competitors": "Wettbewerber",
   "memberships": "Mitgliedschaften",
   "protocol": "Protokoll",
   "chat": "Chat",
   "wiki": "Wiki",
-  "manageKnowledgeGroups": "Wissensgruppen"
+  "manageKnowledgeGroups": "Wissensgruppen",
+  "qrcode": "QR-Code Generator"
 }

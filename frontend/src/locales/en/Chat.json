@@ -1,0 +1,22 @@
+{
+  "title": "AI Chat",
+  "subtitle": "Chat with Mistral Large",
+  "noMessages": "Start a conversation...",
+  "greetingPrefix": "Hello, {name}.",
+  "greetingSuffix": "What can I do for you?",
+  "inputPlaceholder": "Ask any question",
+  "inputPlaceholderWithMessages": "Enter message...",
+  "send": "Send",
+  "openChat": "Open chat",
+  "toolInputStreaming": "Preparing...",
+  "toolExecuting": "Executing...",
+  "toolInput": "Input",
+  "toolOutput": "Result",
+  "toolError": "Error",
+  "toolUnknownError": "An unknown error occurred",
+  "toolStateStreaming": "Streaming",
+  "toolStateExecuting": "Running",
+  "toolStateCompleted": "Completed",
+  "toolStateError": "Error"
+}
+
