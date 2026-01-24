@@ -86,6 +86,9 @@
                 class="mt-3 text-xs text-red-600 dark:text-red-400"
               >
                 {{ $t('Archiv.transcriptionError') || 'Transcription error' }}
+                <span v-if="session.meta?.elevenlabsTranscriptionId" class="ml-1 text-surface-400">
+                  (ID: {{ session.meta.elevenlabsTranscriptionId.slice(0, 8) }}...)
+                </span>
               </div>
             </div>
           </template>
@@ -259,7 +262,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUser } from '@/stores/user'
 import { useToast } from 'primevue/usetoast'
@@ -314,6 +317,7 @@ const editingSession = ref<InterviewSession | null>(null)
 const isUploading = ref(false)
 const uploadProgress = ref(0)
 const isSaving = ref(false)
+const refreshInterval = ref<number | null>(null)
 
 const uploadForm = ref({
   file: null as File | null,
@@ -362,7 +366,7 @@ const resetUploadForm = () => {
 
 const pollTranscriptionStatus = async (
   interviewSessionId: string,
-  maxAttempts: number = 200
+  maxAttempts: number = 60 // Reduced to 60 attempts = 3 minutes max (instead of 10 minutes)
 ): Promise<InterviewSession> => {
   let attempts = 0
   const pollInterval = 3000 // Poll every 3 seconds in frontend
@@ -389,7 +393,13 @@ const pollTranscriptionStatus = async (
     attempts++
   }
 
-  throw new Error('Transcription polling timeout')
+  // Don't throw error - just return the current session state
+  // The backend will continue processing, and the user can see it in the list
+  const finalSession = await fetcher.get<InterviewSession>(
+    `/api/v1/tenant/${tenantId.value}/interview-transcription/${interviewSessionId}/status`
+  )
+  
+  return finalSession
 }
 
 const handleUpload = async () => {
@@ -419,31 +429,52 @@ const handleUpload = async () => {
 
     uploadProgress.value = 30
 
-    // Step 2: Poll transcription status
+    // Step 2: Poll transcription status (with timeout)
     const finalSession = await pollTranscriptionStatus(
       response.interviewSessionId
     )
 
-    if (finalSession.meta?.transcriptionStatus === 'error') {
-      throw new Error(
-        finalSession.meta.transcriptionErrorMessage || 'Transcription failed'
-      )
-    }
-
-    uploadProgress.value = 100
-
-    // Refresh list to show updated session with transcript
+    // Refresh list to show the session (even if still processing)
     await fetchSessions()
 
-    toast.add({
-      severity: 'success',
-      summary: t('success') || 'Success',
-      detail: t('Archiv.uploadSuccess') || 'Interview uploaded and transcribed successfully',
-      life: 3000,
-    })
+    if (finalSession.meta?.transcriptionStatus === 'error') {
+      const errorMsg = finalSession.meta.transcriptionErrorMessage || 'Transcription failed'
+      toast.add({
+        severity: 'error',
+        summary: t('error') || 'Error',
+        detail: `Session ${response.interviewSessionId}: ${errorMsg}`,
+        life: 5000,
+      })
+      showUploadDialog.value = false
+      resetUploadForm()
+      return
+    }
 
-    showUploadDialog.value = false
-    resetUploadForm()
+    if (finalSession.meta?.transcriptionStatus === 'completed') {
+      uploadProgress.value = 100
+      toast.add({
+        severity: 'success',
+        summary: t('success') || 'Success',
+        detail: t('Archiv.uploadSuccess') || 'Interview uploaded and transcribed successfully',
+        life: 3000,
+      })
+      showUploadDialog.value = false
+      resetUploadForm()
+    } else {
+      // Still processing - show info message and let user see it in the list
+      uploadProgress.value = 95
+      toast.add({
+        severity: 'info',
+        summary: t('info') || 'Info',
+        detail: `Session ${response.interviewSessionId}: Transcription is still processing. You can see the progress in the list.`,
+        life: 5000,
+      })
+      showUploadDialog.value = false
+      resetUploadForm()
+      
+      // Start polling the list periodically to update status
+      startPeriodicRefresh(response.interviewSessionId)
+    }
   } catch (error: any) {
     console.error('Upload error:', error)
     toast.add({
@@ -551,8 +582,36 @@ const formatTime = (seconds: number) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
+const startPeriodicRefresh = (sessionId: string) => {
+  // Clear any existing interval
+  if (refreshInterval.value !== null) {
+    clearInterval(refreshInterval.value)
+  }
+
+  // Refresh every 10 seconds until session is completed or error
+  refreshInterval.value = window.setInterval(async () => {
+    await fetchSessions()
+    
+    // Check if session is done
+    const session = sessions.value.find(s => s.id === sessionId)
+    if (session && (session.meta?.transcriptionStatus === 'completed' || session.meta?.transcriptionStatus === 'error')) {
+      if (refreshInterval.value !== null) {
+        clearInterval(refreshInterval.value)
+        refreshInterval.value = null
+      }
+    }
+  }, 10000) // Every 10 seconds
+}
+
 onMounted(() => {
   fetchSessions()
+})
+
+// Cleanup interval on unmount
+onUnmounted(() => {
+  if (refreshInterval.value !== null) {
+    clearInterval(refreshInterval.value)
+  }
 })
 </script>
 

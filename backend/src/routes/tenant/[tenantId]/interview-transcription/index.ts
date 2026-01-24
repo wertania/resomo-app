@@ -67,8 +67,10 @@ async function processTranscriptionForSession(
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    log.debug(
-      `[transcription] Error processing transcription for session ${sessionId}: ${errorMessage}`
+    const errorDetails = error instanceof Error ? error.stack : String(error);
+    log.error(
+      `[transcription] Error processing transcription for session ${sessionId} (ElevenLabs ID: ${elevenlabsTranscriptionId}): ${errorMessage}`,
+      errorDetails
     );
 
     await updateInterviewSessionTranscriptionStatus(
@@ -146,44 +148,97 @@ export default function defineInterviewTranscriptionRoutes(
           tenantId
         );
 
-        // Step 2: Start transcription with ElevenLabs
-        const arrayBuffer = await audioFile.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const elevenlabsTranscriptionId = await startTranscription(
-          buffer,
-          audioFile.name
-        );
-
-        // Step 3: Create interview session with fileId and transcription status
+        // Step 2: Create interview session FIRST with pending status
+        // This ensures we have a DB entry even if ElevenLabs fails
         const session = await createInterviewSession(tenantId, {
           fileId: fileResult.id,
           name,
           description: description || undefined,
           meta: {
             transcriptionStatus: "pending",
-            elevenlabsTranscriptionId,
           },
         });
 
-        // Step 4: Start async processing (don't await)
-        processTranscriptionForSession(
-          session.id,
-          tenantId,
-          elevenlabsTranscriptionId
-        ).catch((error) => {
-          console.error(
-            `Failed to process transcription for session ${session.id}:`,
+        log.debug(
+          `[transcription] Created interview session ${session.id} with pending status`
+        );
+
+        // Return response IMMEDIATELY - DB entry is already created
+        // Frontend can see the session right away, even while ElevenLabs is starting
+        const response = c.json({
+          interviewSessionId: session.id,
+        });
+
+        // Step 3: Start transcription with ElevenLabs (async, don't block response)
+        // This runs in the background after the response is sent
+        // We need to keep a reference to audioFile data since we can't await after response
+        const audioFileData = {
+          arrayBuffer: audioFile.arrayBuffer(),
+          name: audioFile.name,
+        };
+
+        (async () => {
+          try {
+            const arrayBuffer = await audioFileData.arrayBuffer;
+            const buffer = Buffer.from(arrayBuffer);
+            
+            const elevenlabsTranscriptionId = await startTranscription(
+              buffer,
+              audioFileData.name
+            );
+            
+            // Update session with ElevenLabs ID
+            await updateInterviewSessionTranscriptionStatus(
+              session.id,
+              tenantId,
+              "pending",
+              elevenlabsTranscriptionId
+            );
+            
+            log.debug(
+              `[transcription] Started ElevenLabs transcription ${elevenlabsTranscriptionId} for session ${session.id}`
+            );
+
+            // Step 4: Start async processing (don't await)
+            processTranscriptionForSession(
+              session.id,
+              tenantId,
+              elevenlabsTranscriptionId
+            ).catch((error) => {
+              log.error(
+                `[transcription] Failed to process transcription for session ${session.id}:`,
+                error
+              );
+            });
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Unknown error";
+            log.error(
+              `[transcription] Failed to start ElevenLabs transcription for session ${session.id}: ${errorMessage}`
+            );
+            
+            // Update session with error status
+            await updateInterviewSessionTranscriptionStatus(
+              session.id,
+              tenantId,
+              "error",
+              undefined,
+              `Failed to start transcription: ${errorMessage}`
+            );
+          }
+        })().catch((error) => {
+          log.error(
+            `[transcription] Unexpected error in async ElevenLabs processing for session ${session.id}:`,
             error
           );
         });
 
-        return c.json({
-          interviewSessionId: session.id,
-        });
+        return response;
       } catch (error) {
-        console.error("Interview transcription error:", error);
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        const errorDetails = error instanceof Error ? error.stack : String(error);
+        log.error(`[transcription] Interview transcription error: ${errorMessage}`, errorDetails);
         throw new HTTPException(500, {
-          message: `Failed to start transcription: ${(error as Error).message}`,
+          message: `Failed to start transcription: ${errorMessage}`,
         });
       }
     }
