@@ -2,6 +2,8 @@ import { defineServer } from "@framework/index";
 import * as robotTasksSchema from "./db/schema";
 import defineChatRoutes from "./routes/tenant/[tenantId]/chat";
 import defineTranscriptionRoutes from "./routes/tenant/[tenantId]/transcription";
+import defineInterviewTranscriptionRoutes from "./routes/tenant/[tenantId]/interview-transcription";
+import defineInterviewSessionsRoutes from "./routes/tenant/[tenantId]/interview-sessions";
 import { ensureDefaultTenantAndAddUser } from "./lib/usermanagement";
 import defineDigitalTwinRoutes from "./routes/tenant/[tenantId]/digital-twin";
 import { defineUserSettingsRoutes } from "./routes/tenant/[tenantId]/user-settings";
@@ -23,6 +25,8 @@ const server = defineServer({
       app: (app) => {
         defineChatRoutes(app);
         defineTranscriptionRoutes(app);
+        defineInterviewTranscriptionRoutes(app);
+        defineInterviewSessionsRoutes(app);
         defineDigitalTwinRoutes(app);
         defineUserSettingsRoutes(app);
       },

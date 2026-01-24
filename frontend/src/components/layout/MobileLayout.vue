@@ -177,6 +177,7 @@ import IconDashboard from '~icons/line-md/home'
 import IconWiki from '~icons/line-md/file-document'
 import IconChat from '~icons/line-md/chat-round'
 import IconSettings from '~icons/line-md/cog'
+import IconArchiv from '~icons/line-md/folder'
 
 const route = useRoute()
 const router = useRouter()
@@ -200,6 +201,8 @@ const pageTitle = computed(() => {
   switch (routeName) {
     case 'MobileHome':
       return t('MenuSideItems.dashboard')
+    case 'MobileArchiv':
+      return t('MenuSideItems.archiv') || 'Archiv'
     case 'MobileWiki':
       return t('MenuSideItems.wiki')
     case 'MobileChat':
@@ -286,6 +289,11 @@ const bottomNavItems = computed(() => {
 
   if (tenantId) {
     items.push(
+      {
+        label: t('MenuSideItems.archiv') || 'Archiv',
+        icon: markRaw(IconArchiv),
+        to: `/mobile/tenant/${tenantId}/archiv`,
+      },
       {
         label: t('MenuSideItems.wiki'),
         icon: markRaw(IconWiki),

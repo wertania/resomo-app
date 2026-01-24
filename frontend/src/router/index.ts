@@ -47,6 +47,11 @@ const router = createRouter({
           name: 'MobileWiki',
           component: () => import('../views/wiki/index.vue'),
         },
+        {
+          path: 'tenant/:tenantId/archiv',
+          name: 'MobileArchiv',
+          component: () => import('../views/archiv/index.vue'),
+        },
       ],
     },
 
@@ -86,6 +91,11 @@ const router = createRouter({
           path: 'tenant/:tenantId/wiki',
           name: 'Wiki',
           component: () => import('../views/wiki/index.vue'),
+        },
+        {
+          path: 'tenant/:tenantId/archiv',
+          name: 'Archiv',
+          component: () => import('../views/archiv/index.vue'),
         },
         // {
         //   path: '/manage/:tenantId/knowledge',

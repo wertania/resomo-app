@@ -71,6 +71,7 @@ import Menu from '@/volt/Menu.vue'
 import { useUser } from '@/stores/user'
 import IconDashboard from '~icons/line-md/home'
 import IconWiki from '~icons/line-md/file-document'
+import IconArchiv from '~icons/line-md/folder'
 import type { MenuItem } from 'primevue/menuitem'
 
 interface CustomMenuItem extends Omit<MenuItem, 'icon'> {
@@ -102,11 +103,18 @@ const items = computed(() => {
 
   // Add tenant-specific menu items if tenantId is available
   if (tenantId) {
-    menuItems.push({
-      label: t('MenuSideItems.wiki'),
-      icon: markRaw(IconWiki),
-      to: `/tenant/${tenantId}/wiki`,
-    })
+    menuItems.push(
+      {
+        label: t('MenuSideItems.archiv') || 'Archiv',
+        icon: markRaw(IconArchiv),
+        to: `/tenant/${tenantId}/archiv`,
+      },
+      {
+        label: t('MenuSideItems.wiki'),
+        icon: markRaw(IconWiki),
+        to: `/tenant/${tenantId}/wiki`,
+      }
+    )
   }
 
   return menuItems as any

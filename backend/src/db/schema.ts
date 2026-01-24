@@ -3,5 +3,4 @@
 // This file re-exports all table definitions from individual table files
 // ============================================================================
 
-// example: Memberships
-// export * from "./tables/memberships";
+export * from "./tables/interview-sessions";

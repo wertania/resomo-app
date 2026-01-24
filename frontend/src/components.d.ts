@@ -45,6 +45,7 @@ declare module 'vue' {
     MobileLayout: typeof import('./components/layout/MobileLayout.vue')['default']
     MultiSelect: typeof import('./volt/MultiSelect.vue')['default']
     OverlayBadge: typeof import('./volt/OverlayBadge.vue')['default']
+    ProgressBar: typeof import('./volt/ProgressBar.vue')['default']
     ProtocolInput: typeof import('./components/digital-twin/ProtocolInput.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
