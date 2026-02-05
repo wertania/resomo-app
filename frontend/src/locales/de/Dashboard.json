@@ -1,7 +1,7 @@
 {
   "title": "Dashboard",
   "subtitle": "Willkommen zurück! Hier ist dein Überblick.",
-  "welcome": "Willkommen",
-  "welcomeMessage": "Richte deinen Digital Twin ein, um Protokolle direkt vom Dashboard aus zu erstellen. Gehe zum Wiki und markiere einen Eintrag als Digital Twin Einstiegspunkt.",
-  "setupDigitalTwin": "Digital Twin einrichten"
+  "welcome": "Willkommen! 👋",
+  "welcomeMessage": "Bevor du Erinnerungen teilen kannst, musst du zuerst festlegen, wo diese gespeichert werden sollen. Gehe zum Wiki und markiere einen Eintrag als dein persönliches Gedächtnis.",
+  "setupDigitalTwin": "Gedächtnis einrichten"
 }

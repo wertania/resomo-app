@@ -1,6 +1,9 @@
 /**
  * Routes for Digital Twin protocol functionality
- * Handles protocol submission with AI-powered summarization and brain processing
+ * Handles protocol submission with AI-powered summarization
+ * 
+ * NOTE: Brain processing has been moved to the personal-wiki-agent
+ * Use POST /tenant/:tenantId/interview-sessions/process-voice-memo for processing
  */
 
 import type { FastAppHono } from "@framework/types";
@@ -19,10 +22,6 @@ import {
   formatProtocolContent,
 } from "../../../../lib/knowledge/wiki-helpers";
 import { generateProtocolSummary } from "../../../../lib/knowledge/protocol-summarizer";
-import {
-  processProtocol,
-  validateMistralConfig,
-} from "../../../../lib/knowledge/digital-twin-brain-agent";
 
 const JOURNAL_FOLDER_NAME = "99_journal";
 
@@ -42,25 +41,6 @@ const protocolResponseSchema = v.object({
   entryId: v.string(),
   title: v.string(),
   summary: v.string(),
-});
-
-/**
- * Request schema for brain processing
- */
-const processProtocolRequestSchema = v.object({
-  entryPointId: v.string(),
-  protocol: v.pipe(v.string(), v.minLength(1)),
-});
-
-/**
- * Response schema for brain processing
- */
-const processProtocolResponseSchema = v.object({
-  success: v.boolean(),
-  processedFacts: v.number(),
-  updatedCategories: v.array(v.string()),
-  newCategories: v.array(v.string()),
-  errors: v.array(v.string()),
 });
 
 /**
@@ -167,84 +147,6 @@ export default function defineDigitalTwinRoutes(
         console.error("Protocol submission error:", error);
         throw new HTTPException(500, {
           message: `Failed to submit protocol: ${(error as Error).message}`,
-        });
-      }
-    }
-  );
-
-  /**
-   * POST /tenant/:tenantId/digital-twin/process-protocol
-   * Process a protocol and merge key facts into the digital twin brain
-   * Uses an AI agent with tools to analyze, categorize, and store facts
-   * Body: { entryPointId: string, protocol: string }
-   * Returns: { success: boolean, processedFacts: number, updatedCategories: string[], newCategories: string[], errors: string[] }
-   */
-  app.post(
-    `${baseRoute}/process-protocol`,
-    authAndSetUsersInfo,
-    checkUserPermission,
-    describeRoute({
-      tags: ["digital-twin"],
-      summary:
-        "Process a protocol and merge key facts into the digital twin brain",
-      description: `This endpoint uses an AI agent to:
-1. Extract key facts from the protocol
-2. Categorize facts into the existing wiki structure
-3. Create new subcategories as needed (level 2 and 3 only)
-4. Merge facts into existing entries or create new ones
-
-The digital twin brain has a maximum of 3 levels:
-- Level 1: Main categories (managed by user)
-- Level 2 & 3: Subcategories (managed by agent, max 10 per parent)
-
-The agent will automatically ensure a "90_other" fallback category exists.`,
-      responses: {
-        200: {
-          description: "Protocol processed successfully",
-          content: {
-            "application/json": {
-              schema: resolver(processProtocolResponseSchema),
-            },
-          },
-        },
-      },
-    }),
-    validator("param", v.object({ tenantId: v.string() })),
-    validator("json", processProtocolRequestSchema),
-    async (c) => {
-      const { tenantId } = c.req.valid("param");
-      const { entryPointId, protocol } = c.req.valid("json");
-      const userId = c.get("usersId");
-
-      if (!userId) {
-        throw new HTTPException(401, {
-          message: "User not authenticated",
-        });
-      }
-
-      try {
-        // Validate configuration
-        validateMistralConfig();
-      } catch (error) {
-        throw new HTTPException(500, {
-          message: (error as Error).message,
-        });
-      }
-
-      try {
-        // Process the protocol using the brain agent
-        const result = await processProtocol({
-          entryPointId,
-          tenantId,
-          userId,
-          protocol,
-        });
-
-        return c.json(result);
-      } catch (error) {
-        console.error("Protocol processing error:", error);
-        throw new HTTPException(500, {
-          message: `Failed to process protocol: ${(error as Error).message}`,
         });
       }
     }

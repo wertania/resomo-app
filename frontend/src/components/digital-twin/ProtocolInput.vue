@@ -1,19 +1,27 @@
 <template>
-  <Card class="h-full">
-    <template #title>
-      <div class="flex items-center gap-2">
-        <IconProtocol class="h-5 w-5 text-emerald-500" />
-        <span>{{ $t('DigitalTwin.protocol') }}</span>
-      </div>
-    </template>
+  <Card class="overflow-hidden border-0 shadow-lg">
     <template #content>
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-6 p-2">
+        <!-- Friendly Header -->
+        <div class="text-center">
+          <div class="mb-3 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-rose-400 to-orange-400 shadow-lg">
+            <IconStory class="h-8 w-8 text-white" />
+          </div>
+          <h2 class="text-xl font-semibold text-surface-800 dark:text-surface-100">
+            {{ $t('DigitalTwin.title') }}
+          </h2>
+          <p class="mt-2 text-sm text-surface-500 dark:text-surface-400">
+            {{ $t('DigitalTwin.subtitle') }}
+          </p>
+        </div>
+
         <!-- Input Mode Toggle -->
-        <div class="flex items-center justify-center gap-2">
+        <div class="flex items-center justify-center gap-3">
           <Button
             :severity="inputMode === 'voice' ? 'success' : 'secondary'"
             :outlined="inputMode !== 'voice'"
             size="small"
+            class="min-w-28"
             @click="inputMode = 'voice'"
           >
             <IconMicrophone class="mr-2 h-4 w-4" />
@@ -23,6 +31,7 @@
             :severity="inputMode === 'text' ? 'success' : 'secondary'"
             :outlined="inputMode !== 'text'"
             size="small"
+            class="min-w-28"
             @click="inputMode = 'text'"
           >
             <IconKeyboard class="mr-2 h-4 w-4" />
@@ -32,10 +41,13 @@
 
         <!-- Voice Input -->
         <div v-if="inputMode === 'voice'" class="flex flex-col items-center gap-4">
+          <p class="text-center text-sm text-surface-500 dark:text-surface-400">
+            {{ $t('DigitalTwin.voiceHint') }}
+          </p>
           <TranscriptionRecorder
             :show-result="false"
             :show-status="true"
-            size="md"
+            size="lg"
             @transcription-complete="handleTranscriptionComplete"
             @error="handleError"
           />
@@ -46,7 +58,7 @@
           <Textarea
             v-model="textInput"
             :placeholder="$t('DigitalTwin.textPlaceholder')"
-            rows="4"
+            rows="5"
             class="w-full"
             :disabled="isSubmitting"
           />
@@ -55,78 +67,87 @@
         <!-- Transcription Preview (if available) -->
         <div
           v-if="transcription"
-          class="rounded-lg bg-surface-100 p-3 dark:bg-surface-700"
+          class="rounded-xl bg-gradient-to-r from-sky-50 to-indigo-50 p-4 dark:from-sky-900/20 dark:to-indigo-900/20"
         >
-          <div class="mb-1 flex items-center justify-between">
-            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-              {{ $t('DigitalTwin.preview') }}
-            </span>
+          <div class="mb-2 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <IconCheck class="h-4 w-4 text-sky-500" />
+              <span class="text-sm font-medium text-sky-700 dark:text-sky-400">
+                {{ $t('DigitalTwin.recorded') }}
+              </span>
+            </div>
             <Button
               severity="secondary"
               text
               size="small"
-              class="h-6 w-6 p-0"
+              class="h-7 w-7 p-0"
               @click="clearTranscription"
+              :title="$t('DigitalTwin.clearRecording')"
             >
-              <IconClear class="h-3 w-3" />
+              <IconClear class="h-4 w-4" />
             </Button>
           </div>
-          <p class="line-clamp-3 text-sm text-gray-700 dark:text-gray-300">
+          <p class="line-clamp-4 text-sm text-surface-700 dark:text-surface-300">
             {{ transcription }}
           </p>
         </div>
 
-        <!-- Apply to Digital Twin Checkbox -->
-        <div class="flex items-center gap-2">
-          <Checkbox
-            v-model="applyToDigitalTwin"
-            inputId="applyToDigitalTwin"
-            :binary="true"
-            :disabled="isSubmitting"
-          />
-          <label
-            for="applyToDigitalTwin"
-            class="cursor-pointer text-sm text-surface-700 dark:text-surface-300"
-          >
-            {{ $t('DigitalTwin.applyToDigitalTwin') }}
-          </label>
+        <!-- Save Options -->
+        <div class="flex flex-col gap-3 rounded-lg bg-surface-50 p-4 dark:bg-surface-800">
+          <div class="flex items-center gap-3">
+            <Checkbox
+              v-model="saveToWiki"
+              inputId="saveToWiki"
+              :binary="true"
+              :disabled="isSubmitting"
+            />
+            <label
+              for="saveToWiki"
+              class="cursor-pointer text-sm text-surface-700 dark:text-surface-300"
+            >
+              <span class="font-medium">{{ $t('DigitalTwin.saveToWiki') }}</span>
+              <span class="ml-1 text-surface-500 dark:text-surface-400">
+                {{ $t('DigitalTwin.saveToWikiHint') }}
+              </span>
+            </label>
+          </div>
         </div>
 
-        <!-- Submit Button -->
+        <!-- Submit Button (only show when there's content) -->
         <Button
-          :label="$t('DigitalTwin.submit')"
+          v-if="canSubmit"
           :loading="isSubmitting"
-          :disabled="!canSubmit || isSubmitting"
-          severity="success"
-          class="w-full"
+          :disabled="isSubmitting"
+          class="w-full !border-rose-400 !bg-gradient-to-r !from-rose-400 !to-orange-400 !py-3 text-base font-medium !text-white hover:!from-rose-500 hover:!to-orange-500"
           @click="handleSubmit"
         >
-          <template #icon>
-            <IconSend class="mr-2 h-4 w-4" />
-          </template>
+          <IconSend class="mr-2 h-5 w-5" />
+          {{ $t('DigitalTwin.submit') }}
         </Button>
 
         <!-- Success Message -->
         <div
           v-if="lastSubmission"
-          class="rounded-lg bg-emerald-50 p-3 dark:bg-emerald-900/20"
+          class="rounded-xl bg-gradient-to-r from-amber-100 to-orange-100 p-4 dark:from-amber-900/30 dark:to-orange-900/30"
         >
-          <div class="flex items-start gap-2">
-            <IconCheck class="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" />
+          <div class="flex items-start gap-3">
+            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500">
+              <IconCheck class="h-5 w-5 text-white" />
+            </div>
             <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                {{ $t('DigitalTwin.submitted') }}
+              <p class="font-medium text-amber-800 dark:text-amber-300">
+                {{ $t('DigitalTwin.thankYou') }}
               </p>
-              <p class="mt-1 text-xs text-emerald-600 dark:text-emerald-500">
-                {{ lastSubmission.title }}
+              <p class="mt-1 text-sm text-amber-700 dark:text-amber-400">
+                {{ $t('DigitalTwin.memorySaved') }}
               </p>
-              <p
-                v-if="lastSubmission.applied"
-                class="mt-1 text-xs text-emerald-600 dark:text-emerald-500"
+              <div
+                v-if="lastSubmission.processedFacts && lastSubmission.processedFacts > 0"
+                class="mt-2 flex items-center gap-2 text-xs text-amber-600 dark:text-amber-500"
               >
-                <IconBrain class="inline h-3 w-3 mr-1" />
-                {{ $t('DigitalTwin.appliedToDigitalTwin', { facts: lastSubmission.processedFacts }) }}
-              </p>
+                <IconBrain class="h-4 w-4" />
+                <span>{{ $t('DigitalTwin.factsExtracted', { facts: lastSubmission.processedFacts }) }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -142,7 +163,7 @@ import { useUser } from '@/stores/user'
 import { useSettingsStore } from '@/stores/settings'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
-import IconProtocol from '~icons/line-md/document-list'
+import IconStory from '~icons/line-md/heart'
 import IconMicrophone from '~icons/line-md/play'
 import IconKeyboard from '~icons/line-md/text-box'
 import IconSend from '~icons/line-md/arrow-right'
@@ -150,19 +171,13 @@ import IconClear from '~icons/line-md/close'
 import IconCheck from '~icons/line-md/confirm'
 import IconBrain from '~icons/line-md/lightbulb'
 
-interface ProtocolResponse {
-  success: boolean
-  entryId: string
-  title: string
-  summary: string
-}
-
-interface ProcessProtocolResponse {
+interface ProcessInterviewResponse {
   success: boolean
   processedFacts: number
   updatedCategories: string[]
   newCategories: string[]
   errors: string[]
+  interviewEntryId?: string
 }
 
 const { t } = useI18n()
@@ -174,8 +189,8 @@ const inputMode = ref<'voice' | 'text'>('voice')
 const textInput = ref('')
 const transcription = ref('')
 const isSubmitting = ref(false)
-const applyToDigitalTwin = ref(true) // Default: apply to digital twin
-const lastSubmission = ref<{ title: string; summary: string; applied?: boolean; processedFacts?: number } | null>(null)
+const saveToWiki = ref(true)
+const lastSubmission = ref<{ processedFacts?: number } | null>(null)
 
 // Get the entry point ID from settings
 const entryPointId = computed(() => settingsStore.getDigitalTwinEntryPoint())
@@ -217,7 +232,7 @@ const clearTranscription = () => {
   transcription.value = ''
 }
 
-// Submit protocol
+// Submit the story/memory
 const handleSubmit = async () => {
   if (!canSubmit.value || !entryPointId.value) return
 
@@ -225,60 +240,19 @@ const handleSubmit = async () => {
   lastSubmission.value = null
 
   try {
-    // Step 1: Create protocol entry with summarization
-    const response = await fetcher.post<ProtocolResponse>(
-      `/api/v1/tenant/${userStore.state.selectedTenant}/digital-twin/protocol`,
+    // Create an interview session directly and process it
+    const response = await fetcher.post<ProcessInterviewResponse>(
+      `/api/v1/tenant/${userStore.state.selectedTenant}/interview-sessions/process-voice-memo`,
       {
         entryPointId: entryPointId.value,
         transcript: contentToSubmit.value,
+        saveToWiki: saveToWiki.value,
       }
     )
 
     if (response.success) {
-      let applied = false
-      let processedFacts = 0
-
-      // Step 2: Apply to digital twin brain if checkbox is checked
-      if (applyToDigitalTwin.value) {
-        try {
-          const processResponse = await fetcher.post<ProcessProtocolResponse>(
-            `/api/v1/tenant/${userStore.state.selectedTenant}/digital-twin/process-protocol`,
-            {
-              entryPointId: entryPointId.value,
-              protocol: contentToSubmit.value,
-            }
-          )
-
-          if (processResponse.success) {
-            applied = true
-            processedFacts = processResponse.processedFacts || 0
-
-            // Show warnings if any
-            if (processResponse.errors && processResponse.errors.length > 0) {
-              toast.add({
-                severity: 'warn',
-                summary: t('DigitalTwin.processingWarnings'),
-                detail: processResponse.errors.join(', '),
-                life: 5000,
-              })
-            }
-          }
-        } catch (processError) {
-          console.error('Protocol processing error:', processError)
-          toast.add({
-            severity: 'warn',
-            summary: t('DigitalTwin.processingError'),
-            detail: t('DigitalTwin.processingErrorDetail'),
-            life: 5000,
-          })
-        }
-      }
-
       lastSubmission.value = {
-        title: response.title,
-        summary: response.summary,
-        applied,
-        processedFacts,
+        processedFacts: response.processedFacts || 0,
       }
 
       // Clear inputs
@@ -288,14 +262,12 @@ const handleSubmit = async () => {
       toast.add({
         severity: 'success',
         summary: t('DigitalTwin.success'),
-        detail: applied
-          ? t('DigitalTwin.protocolCreatedAndApplied', { facts: processedFacts })
-          : t('DigitalTwin.protocolCreated'),
+        detail: t('DigitalTwin.memorySavedDetail'),
         life: 3000,
       })
     }
   } catch (error) {
-    console.error('Protocol submission error:', error)
+    console.error('Submission error:', error)
     toast.add({
       severity: 'error',
       summary: t('DigitalTwin.error'),
@@ -312,7 +284,7 @@ watch(lastSubmission, (value) => {
   if (value) {
     setTimeout(() => {
       lastSubmission.value = null
-    }, 10000)
+    }, 15000)
   }
 })
 </script>

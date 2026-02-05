@@ -674,4 +674,109 @@ export default function defineInterviewSessionsRoutes(
       }
     }
   );
+
+  /**
+   * POST /tenant/:tenantId/interview-sessions/process-voice-memo
+   * Process a voice memo / spoken memory directly from the dashboard
+   * This creates a simplified interview and processes it immediately
+   */
+  app.post(
+    `${baseRoute}/process-voice-memo`,
+    authAndSetUsersInfo,
+    checkUserPermission,
+    describeRoute({
+      tags: ["interview-sessions"],
+      summary: "Process voice memo for personal wiki",
+      description: "Process a spoken memory/story directly and save to wiki. Used from the dashboard.",
+      responses: {
+        200: {
+          description: "Processing result",
+          content: {
+            "application/json": {
+              schema: resolver(
+                v.object({
+                  success: v.boolean(),
+                  processedFacts: v.number(),
+                  updatedCategories: v.array(v.string()),
+                  newCategories: v.array(v.string()),
+                  errors: v.array(v.string()),
+                  interviewEntryId: v.optional(v.string()),
+                })
+              ),
+            },
+          },
+        },
+      },
+    }),
+    validator("param", v.object({ tenantId: v.string() })),
+    validator(
+      "json",
+      v.object({
+        entryPointId: v.string(),
+        transcript: v.pipe(v.string(), v.minLength(1)),
+        saveToWiki: v.optional(v.boolean()),
+      })
+    ),
+    async (c) => {
+      try {
+        const { tenantId } = c.req.valid("param");
+        const { entryPointId, transcript, saveToWiki = true } = c.req.valid("json");
+        const userId = c.get("usersId");
+
+        if (!saveToWiki) {
+          // If not saving to wiki, just return success
+          return c.json({
+            success: true,
+            processedFacts: 0,
+            updatedCategories: [],
+            newCategories: [],
+            errors: [],
+          });
+        }
+
+        // Generate a simple markdown format for the voice memo
+        const now = new Date();
+        const dateStr = now.toLocaleDateString("de-DE", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+        const timeStr = now.toLocaleTimeString("de-DE", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        const interviewMarkdown = `# Erinnerung vom ${dateStr}
+
+**Aufgenommen um:** ${timeStr}
+
+---
+
+${transcript}
+`;
+
+        // Process with personal wiki agent
+        // For voice memos, we use a generic name since there's no "main character" per se
+        const result = await processInterview({
+          entryPointId,
+          tenantId,
+          userId,
+          interviewMarkdown,
+          interviewName: `Erinnerung_${now.toISOString().split("T")[0]}`,
+          mainCharacterName: "Erzähler", // Generic name for voice memos
+        });
+
+        return c.json(result);
+      } catch (error) {
+        if (error instanceof HTTPException) {
+          throw error;
+        }
+        console.error("Error processing voice memo:", error);
+        throw new HTTPException(500, {
+          message: `Failed to process voice memo: ${(error as Error).message}`,
+        });
+      }
+    }
+  );
 }

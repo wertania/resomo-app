@@ -1,7 +1,7 @@
 {
   "title": "Dashboard",
   "subtitle": "Welcome back! Here is your overview.",
-  "welcome": "Welcome",
-  "welcomeMessage": "Set up your Digital Twin to create protocols directly from the dashboard. Go to the Wiki and mark an entry as Digital Twin entry point.",
-  "setupDigitalTwin": "Set up Digital Twin"
+  "welcome": "Welcome! 👋",
+  "welcomeMessage": "Before you can share memories, you need to set up where they'll be stored. Go to the Wiki and mark an entry as your personal memory.",
+  "setupDigitalTwin": "Set up memory"
 }

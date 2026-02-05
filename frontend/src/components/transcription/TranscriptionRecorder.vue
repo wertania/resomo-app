@@ -9,7 +9,7 @@
         sizeClasses,
         isRecording
           ? 'animate-pulse bg-red-500 hover:bg-red-600 focus:ring-red-400'
-          : 'bg-emerald-500 hover:bg-emerald-600 focus:ring-emerald-400',
+          : 'bg-gradient-to-br from-rose-400 to-orange-400 hover:from-rose-500 hover:to-orange-500 focus:ring-rose-400',
         isTranscribing ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
       ]"
     >
