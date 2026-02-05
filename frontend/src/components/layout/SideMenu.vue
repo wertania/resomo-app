@@ -72,6 +72,7 @@ import { useUser } from '@/stores/user'
 import IconDashboard from '~icons/line-md/home'
 import IconWiki from '~icons/line-md/file-document'
 import IconArchiv from '~icons/line-md/folder'
+import IconChat from '~icons/line-md/chat-round'
 import type { MenuItem } from 'primevue/menuitem'
 
 interface CustomMenuItem extends Omit<MenuItem, 'icon'> {
@@ -113,6 +114,11 @@ const items = computed(() => {
         label: t('MenuSideItems.wiki'),
         icon: markRaw(IconWiki),
         to: `/tenant/${tenantId}/wiki`,
+      },
+      {
+        label: t('MenuSideItems.chat'),
+        icon: markRaw(IconChat),
+        to: `/tenant/${tenantId}/chat`,
       }
     )
   }

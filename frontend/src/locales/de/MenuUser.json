@@ -7,6 +7,9 @@
   "english": "Englisch",
   "tenants": "Mandanten",
   "teams": "Teams",
-  "tokens": "Tokens"
+  "tokens": "Tokens",
+  "viewMode": "Ansicht",
+  "desktopView": "Desktop-Ansicht",
+  "mobileView": "Mobile-Ansicht"
 }
 

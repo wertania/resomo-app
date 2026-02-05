@@ -108,6 +108,14 @@
               <span>{{ item.label }}</span>
             </div>
             <div
+              v-else-if="item.template === 'profileViewMode'"
+              class="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 rounded-sm"
+              @click="item.command?.({ originalEvent: $event, item })"
+            >
+              <IconDesktop class="w-4 h-4 text-surface-400 dark:text-surface-500" />
+              <span>{{ item.label }}</span>
+            </div>
+            <div
               v-else-if="item.template === 'profileLogout'"
               class="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 rounded-sm"
               @click="item.command?.({ originalEvent: $event, item })"
@@ -166,6 +174,7 @@ import { useRoute, useRouter } from 'vue-router'
 import Menu from '@/volt/Menu.vue'
 import { useApp } from '@/stores/main'
 import { useUser } from '@/stores/user'
+import { useSettingsStore } from '@/stores/settings'
 import { setLocale } from '@/i18n'
 import type { MenuItem } from 'primevue/menuitem'
 
@@ -176,8 +185,8 @@ import IconTranslate from '~icons/line-md/chat'
 import IconDashboard from '~icons/line-md/home'
 import IconWiki from '~icons/line-md/file-document'
 import IconChat from '~icons/line-md/chat-round'
-import IconSettings from '~icons/line-md/cog'
 import IconArchiv from '~icons/line-md/folder'
+import IconDesktop from '~icons/line-md/monitor'
 
 const route = useRoute()
 const router = useRouter()
@@ -185,6 +194,7 @@ const { t, locale } = useI18n()
 const appStore = useApp()
 const userStore = useUser()
 const authStore = useAuthStore()
+const settingsStore = useSettingsStore()
 
 const profileMenuRef = ref<InstanceType<typeof Menu> | null>(null)
 const profileMenuOpen = ref(false)
@@ -307,12 +317,6 @@ const bottomNavItems = computed(() => {
     )
   }
 
-  items.push({
-    label: t('MenuUser.myProfile'),
-    icon: markRaw(IconSettings),
-    to: '/mobile/settings',
-  })
-
   return items
 })
 
@@ -351,6 +355,14 @@ const profileMenuItems = computed<MenuItem[]>(() => {
       separator: true,
     },
     {
+      label: t('MenuUser.desktopView'),
+      template: 'profileViewMode',
+      command: handleSwitchToDesktop,
+    },
+    {
+      separator: true,
+    },
+    {
       label: t('MenuUser.logout'),
       template: 'profileLogout',
       command: handleLogout,
@@ -367,6 +379,11 @@ const toggleProfileMenu = (event: MouseEvent) => {
 
 const handleLanguageChange = (targetLocale: 'de' | 'en') => {
   setLocale(targetLocale)
+  profileMenuRef.value?.hide()
+}
+
+const handleSwitchToDesktop = () => {
+  settingsStore.switchViewMode('desktop')
   profileMenuRef.value?.hide()
 }
 

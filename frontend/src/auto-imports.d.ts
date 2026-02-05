@@ -106,7 +106,7 @@ declare global {
   export type { KnowledgeText, KnowledgeTextInsert, KnowledgeTextUpdate } from './stores/knowledgeTexts'
   import('./stores/knowledgeTexts')
   // @ts-ignore
-  export type { UserSettings } from './stores/settings'
+  export type { UserSettings, ViewMode } from './stores/settings'
   import('./stores/settings')
   // @ts-ignore
   export type { ApiToken, ApiTokenCreate, ApiTokenResponse, AvailableScopesResponse } from './stores/tokens'

@@ -293,6 +293,16 @@
                   <span>{{ item.label }}</span>
                 </div>
                 <div
+                  v-else-if="item.template === 'profileViewMode'"
+                  class="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 rounded-sm"
+                  @click="item.command?.({ originalEvent: $event, item })"
+                >
+                  <IconMobile
+                    class="w-4 h-4 text-surface-400 dark:text-surface-500"
+                  />
+                  <span>{{ item.label }}</span>
+                </div>
+                <div
                   v-else-if="item.template === 'empty'"
                   class="px-3 py-2 text-sm text-surface-400 dark:text-surface-500 italic select-none"
                 >
@@ -362,6 +372,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useApp } from '@/stores/main'
 import { useUser } from '@/stores/user'
+import { useSettingsStore } from '@/stores/settings'
 import { setLocale } from '@/i18n'
 
 // Iconify icons
@@ -375,6 +386,7 @@ import IconClose from '~icons/line-md/close'
 import IconChevronLeft from '~icons/line-md/chevron-left'
 import IconChevronRight from '~icons/line-md/chevron-right'
 import IconTranslate from '~icons/line-md/chat'
+import IconMobile from '~icons/line-md/phone'
 
 interface Props {
   userName?: string
@@ -417,6 +429,7 @@ const { t, locale } = useI18n()
 const appStore = useApp()
 const userStore = useUser()
 const authStore = useAuthStore()
+const settingsStore = useSettingsStore()
 
 const handleLogout = async () => {
   await authStore.logout()
@@ -425,6 +438,11 @@ const handleLogout = async () => {
 const handleLanguageChange = (targetLocale: 'de' | 'en') => {
   setLocale(targetLocale)
   // Close the menu after selection
+  profileMenuRef.value?.hide()
+}
+
+const handleSwitchToMobile = () => {
+  settingsStore.switchViewMode('mobile')
   profileMenuRef.value?.hide()
 }
 
@@ -569,6 +587,14 @@ const profileMenuItems = computed<MenuItem[]>(() => {
       template: 'profileLanguage',
       command: () => handleLanguageChange('en'),
       class: locale.value === 'en' ? 'font-semibold' : '',
+    },
+    {
+      separator: true,
+    },
+    {
+      label: t('MenuUser.mobileView'),
+      template: 'profileViewMode',
+      command: handleSwitchToMobile,
     },
     {
       separator: true,

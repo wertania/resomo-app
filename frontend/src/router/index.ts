@@ -156,6 +156,23 @@ const isAuthenticatedByHanko = (): boolean => {
 }
 
 /**
+ * Get the saved or auto-detected view mode from localStorage
+ */
+const getViewMode = (): 'mobile' | 'desktop' => {
+  const saved = localStorage.getItem('viewMode')
+  if (saved === 'mobile' || saved === 'desktop') {
+    return saved
+  }
+  // Auto-detect on first visit
+  const isSmallScreen = window.innerWidth <= 768
+  const mobileUserAgentRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+  const isMobileUserAgent = mobileUserAgentRegex.test(navigator.userAgent)
+  const detectedMode = (isSmallScreen || isMobileUserAgent) ? 'mobile' : 'desktop'
+  localStorage.setItem('viewMode', detectedMode)
+  return detectedMode
+}
+
+/**
  * Navigation guard - supports both JWT and Hanko authentication
  */
 router.beforeEach((to, from, next) => {
@@ -176,6 +193,13 @@ router.beforeEach((to, from, next) => {
   // If not authenticated and Hanko is enabled, redirect to login
   if (!isAuthenticated) {
     next({ name: 'Login' })
+    return
+  }
+
+  // Auto-redirect to mobile view on root path if mobile device detected
+  const viewMode = getViewMode()
+  if (viewMode === 'mobile' && to.path === '/') {
+    next('/mobile')
     return
   }
 
