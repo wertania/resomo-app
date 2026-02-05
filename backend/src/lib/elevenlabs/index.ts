@@ -190,10 +190,11 @@ export async function pollTranscriptionStatus(
 
     words.forEach((word: any) => {
       const speakerId = word.speakerId || word.speaker_id || "unknown";
+      // ElevenLabs API uses 'start' and 'end' for timestamps (in seconds)
       const wordData = {
         text: word.word || word.text || "",
-        startTime: word.startTime || word.start_time || 0,
-        endTime: word.endTime || word.end_time,
+        startTime: word.start ?? word.startTime ?? word.start_time ?? 0,
+        endTime: word.end ?? word.endTime ?? word.end_time,
       };
 
       // If speaker changed, flush current segment and start new one
