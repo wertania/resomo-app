@@ -41,6 +41,10 @@ export async function startTranscription(
   const convertResult = await elevenlabsClient.speechToText.convert({
     modelId: "scribe_v2",
     file: audioFile,
+    languageCode: "de",
+    // numSpeakers: 2,
+    diarize: true,
+    timestampsGranularity: "word",
   });
 
   const transcriptionId =
@@ -100,6 +104,9 @@ export async function pollTranscriptionStatus(
         `[elevenlabs] Transcription response: has text=${!!transcription.text}, has words=${!!transcription.words}`
       );
 
+      // Log the full transcription result for debugging
+      log.debug(`[elevenlabs] Full transcription result: ${JSON.stringify(transcription, null, 2)}`);
+
       // Check if transcription is complete: if text or words are present, it's done
       if (transcription.text || (transcription.words && transcription.words.length > 0)) {
         log.debug(`[elevenlabs] Transcription completed`);
@@ -111,7 +118,7 @@ export async function pollTranscriptionStatus(
       log.debug(
         `[elevenlabs] Error polling transcription (attempt ${attempts + 1}): ${error instanceof Error ? error.message : "Unknown error"}`
       );
-      
+
       // If it's a clear error (not just "not ready yet"), we might want to throw
       // But for now, we'll continue polling
     }
