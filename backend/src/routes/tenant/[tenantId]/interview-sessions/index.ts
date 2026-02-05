@@ -788,7 +788,7 @@ export default function defineInterviewSessionsRoutes(
   /**
    * POST /tenant/:tenantId/interview-sessions/process-voice-memo
    * Process a voice memo / spoken memory directly from the dashboard
-   * This creates a simplified interview and processes it immediately
+   * This creates an interview session with the transcript and processes it immediately
    */
   app.post(
     `${baseRoute}/process-voice-memo`,
@@ -797,7 +797,7 @@ export default function defineInterviewSessionsRoutes(
     describeRoute({
       tags: ["interview-sessions"],
       summary: "Process voice memo for personal wiki",
-      description: "Process a spoken memory/story directly and save to wiki. Used from the dashboard.",
+      description: "Process a spoken memory/story directly, save as interview session, and optionally process to wiki. Used from the dashboard.",
       responses: {
         200: {
           description: "Processing result",
@@ -811,6 +811,8 @@ export default function defineInterviewSessionsRoutes(
                   newCategories: v.array(v.string()),
                   errors: v.array(v.string()),
                   interviewEntryId: v.optional(v.string()),
+                  interviewSessionId: v.optional(v.string()),
+                  embeddingCreated: v.optional(v.boolean()),
                 })
               ),
             },
@@ -833,18 +835,6 @@ export default function defineInterviewSessionsRoutes(
         const { entryPointId, transcript, saveToWiki = true } = c.req.valid("json");
         const userId = c.get("usersId");
 
-        if (!saveToWiki) {
-          // If not saving to wiki, just return success
-          return c.json({
-            success: true,
-            processedFacts: 0,
-            updatedCategories: [],
-            newCategories: [],
-            errors: [],
-          });
-        }
-
-        // Generate a simple markdown format for the voice memo
         const now = new Date();
         const dateStr = now.toLocaleDateString("de-DE", {
           weekday: "long",
@@ -857,27 +847,88 @@ export default function defineInterviewSessionsRoutes(
           minute: "2-digit",
         });
 
-        const interviewMarkdown = `# Erinnerung vom ${dateStr}
+        // Create the interview session with transcript structure
+        // Voice memos have only one speaker (speaker_0) who is the main character
+        const speakerId = "speaker_0";
+        const speakerName = "Hauptperson";
 
-**Aufgenommen um:** ${timeStr}
+        const interviewSession = await createInterviewSession(tenantId, {
+          fileId: "00000000-0000-0000-0000-000000000000", // Placeholder since we have no audio file
+          name: `Erinnerung vom ${dateStr}, ${timeStr}`,
+          description: "Sprachnotiz vom Dashboard",
+          meta: {
+            transcriptionStatus: "completed",
+            mainCharacterId: speakerId,
+            speakerTypes: {
+              [speakerId]: "interviewee",
+            },
+          },
+          transcript: {
+            language: "de",
+            segments: [
+              {
+                text: transcript,
+                startTime: 0,
+                speaker: {
+                  name: speakerName,
+                  id: speakerId,
+                },
+              },
+            ],
+          },
+        });
 
----
+        // Always create embedding for chat search
+        const embeddingResult = await createInterviewEmbedding(
+          interviewSession.id,
+          tenantId,
+          userId
+        );
 
-${transcript}
-`;
+        if (!saveToWiki) {
+          // If not saving to wiki, just return success with the session ID
+          return c.json({
+            success: true,
+            processedFacts: 0,
+            updatedCategories: [],
+            newCategories: [],
+            errors: [],
+            interviewSessionId: interviewSession.id,
+            embeddingCreated: embeddingResult.success,
+          });
+        }
+
+        // Generate interview markdown for wiki processing
+        const interviewMarkdown = generateInterviewMarkdown(interviewSession);
 
         // Process with personal wiki agent
-        // For voice memos, we use a generic name since there's no "main character" per se
         const result = await processInterview({
           entryPointId,
           tenantId,
           userId,
           interviewMarkdown,
-          interviewName: `Erinnerung_${now.toISOString().split("T")[0]}`,
-          mainCharacterName: "Erzähler", // Generic name for voice memos
+          interviewName: interviewSession.name,
+          mainCharacterName: speakerName,
         });
 
-        return c.json(result);
+        // Update session metadata to mark as wiki processed
+        await updateInterviewSession(interviewSession.id, tenantId, {
+          meta: {
+            wikiProcessed: true,
+            wikiProcessedAt: new Date().toISOString(),
+            wikiProcessedResult: {
+              processedFacts: result.processedFacts,
+              updatedCategories: result.updatedCategories,
+              newCategories: result.newCategories,
+            },
+          },
+        });
+
+        return c.json({
+          ...result,
+          interviewSessionId: interviewSession.id,
+          embeddingCreated: embeddingResult.success,
+        });
       } catch (error) {
         if (error instanceof HTTPException) {
           throw error;

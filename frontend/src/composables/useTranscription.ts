@@ -105,6 +105,11 @@ export function useTranscription(options: TranscriptionOptions = {}) {
     }
   }
 
+  const clearTranscription = () => {
+    transcription.value = ''
+    error.value = ''
+  }
+
   return {
     isRecording,
     isTranscribing,
@@ -113,5 +118,6 @@ export function useTranscription(options: TranscriptionOptions = {}) {
     startRecording,
     stopRecording,
     toggleRecording,
+    clearTranscription,
   }
 }

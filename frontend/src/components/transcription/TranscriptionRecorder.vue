@@ -109,6 +109,7 @@ const {
   transcription,
   error,
   toggleRecording: baseToggleRecording,
+  clearTranscription,
 } = useTranscription({
   onTranscriptionComplete: (text) => {
     emit('transcription-complete', text)
@@ -116,6 +117,11 @@ const {
   onError: (error) => {
     emit('error', error)
   },
+})
+
+// Expose clear method for parent components
+defineExpose({
+  clear: clearTranscription,
 })
 
 // Wrap toggle to emit events

@@ -45,6 +45,7 @@
             {{ $t('DigitalTwin.voiceHint') }}
           </p>
           <TranscriptionRecorder
+            ref="transcriptionRecorderRef"
             :show-result="false"
             :show-status="true"
             size="lg"
@@ -191,6 +192,7 @@ const transcription = ref('')
 const isSubmitting = ref(false)
 const saveToWiki = ref(true)
 const lastSubmission = ref<{ processedFacts?: number } | null>(null)
+const transcriptionRecorderRef = ref<{ clear: () => void } | null>(null)
 
 // Get the entry point ID from settings
 const entryPointId = computed(() => settingsStore.getDigitalTwinEntryPoint())
@@ -230,6 +232,7 @@ const handleError = (error: string) => {
 // Clear transcription
 const clearTranscription = () => {
   transcription.value = ''
+  transcriptionRecorderRef.value?.clear()
 }
 
 // Submit the story/memory
@@ -258,6 +261,8 @@ const handleSubmit = async () => {
       // Clear inputs
       textInput.value = ''
       transcription.value = ''
+      // Also clear the transcription recorder's internal state
+      transcriptionRecorderRef.value?.clear()
 
       toast.add({
         severity: 'success',
