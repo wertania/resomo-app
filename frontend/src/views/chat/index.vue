@@ -21,18 +21,10 @@
               <input
                 v-model="input"
                 :placeholder="inputPlaceholder"
-                class="w-full rounded-3xl px-4 py-3 pr-12 border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-800 text-surface-900 dark:text-surface-0 placeholder-surface-400 dark:placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent transition-all"
+                class="w-full rounded-3xl px-4 py-3 border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-800 text-surface-900 dark:text-surface-0 placeholder-surface-400 dark:placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent transition-all"
                 :disabled="isStreaming"
                 @keydown.enter.exact.prevent="handleSubmit"
               />
-              <!-- Microphone Icon (muted/inactive) -->
-              <button
-                type="button"
-                class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-surface-400 dark:text-surface-500 hover:text-surface-600 dark:hover:text-surface-400 transition-colors"
-                @click="handleVoiceInput"
-              >
-                <IconMicrophoneOff class="w-5 h-5" />
-              </button>
             </div>
 
             <!-- Send Button (Purple) - Round -->
@@ -235,18 +227,10 @@
             <input
               v-model="input"
               :placeholder="inputPlaceholder"
-              class="w-full rounded-3xl px-4 py-3 pr-12 border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-800 text-surface-900 dark:text-surface-0 placeholder-surface-400 dark:placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent transition-all"
+              class="w-full rounded-3xl px-4 py-3 border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-800 text-surface-900 dark:text-surface-0 placeholder-surface-400 dark:placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent transition-all"
               :disabled="isStreaming"
               @keydown.enter.exact.prevent="handleSubmit"
             />
-            <!-- Microphone Icon (muted/inactive) -->
-            <button
-              type="button"
-              class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-surface-400 dark:text-surface-500 hover:text-surface-600 dark:hover:text-surface-400 transition-colors"
-              @click="handleVoiceInput"
-            >
-              <IconMicrophoneOff class="w-5 h-5" />
-            </button>
           </div>
 
           <!-- Send Button (Purple) - Round -->
@@ -269,7 +253,6 @@ import { DefaultChatTransport } from 'ai'
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import IconMicrophoneOff from '~icons/line-md/pause'
 import IconSend from '~icons/line-md/arrow-open-right'
 import IconTool from '~icons/line-md/cog-loop'
 import IconLoading from '~icons/line-md/loading-twotone-loop'
@@ -530,10 +513,6 @@ const handleSubmit = async (e: Event) => {
   }
 }
 
-const handleVoiceInput = () => {
-  // Placeholder for voice input functionality
-  console.log('Voice input clicked')
-}
 
 // Helper to check if message has text content
 const hasTextContent = (parts: any[]) => {
