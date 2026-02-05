@@ -173,12 +173,16 @@ import IconCheck from '~icons/line-md/confirm'
 import IconBrain from '~icons/line-md/lightbulb'
 
 interface ProcessInterviewResponse {
-  success: boolean
-  processedFacts: number
-  updatedCategories: string[]
-  newCategories: string[]
-  errors: string[]
+  success?: boolean
+  processedFacts?: number
+  updatedCategories?: string[]
+  newCategories?: string[]
+  errors?: string[]
   interviewEntryId?: string
+  interviewSessionId?: string
+  embeddingCreated?: boolean
+  // AI agent may return content field in some cases
+  content?: string
 }
 
 const { t } = useI18n()
@@ -253,7 +257,13 @@ const handleSubmit = async () => {
       }
     )
 
-    if (response.success) {
+    // Check for success - the API may return success explicitly, or we consider it successful
+    // if we got an interviewSessionId or interviewEntryId back
+    const isSuccess = response.success === true || 
+                      response.interviewSessionId !== undefined || 
+                      response.interviewEntryId !== undefined
+
+    if (isSuccess) {
       lastSubmission.value = {
         processedFacts: response.processedFacts || 0,
       }

@@ -922,8 +922,16 @@ export async function processInterview(
     prompt: buildUserPrompt(interviewMarkdown, mainCharacterName),
   });
 
+  // Ensure the output has the expected structure
+  // The AI agent might return unexpected fields, so we normalize the response
+  const output = result.output || {};
+  
   return {
-    ...result.output,
+    success: output.success ?? true, // Default to true if we got this far
+    processedFacts: output.processedFacts ?? 0,
+    updatedCategories: Array.isArray(output.updatedCategories) ? output.updatedCategories : [],
+    newCategories: Array.isArray(output.newCategories) ? output.newCategories : [],
+    errors: Array.isArray(output.errors) ? output.errors : [],
     interviewEntryId,
   };
 }

@@ -279,11 +279,11 @@
                 <span>{{ $t('Archiv.wikiProcessed') || 'Wissen wurde ins Wiki extrahiert' }}</span>
               </div>
               <div v-if="editingSession.meta.wikiProcessedResult" class="mt-2 text-xs text-green-600 dark:text-green-400">
-                <div>{{ editingSession.meta.wikiProcessedResult.processedFacts }} {{ $t('Archiv.factsExtracted') || 'Informationen extrahiert' }}</div>
-                <div v-if="editingSession.meta.wikiProcessedResult.updatedCategories.length > 0">
+                <div>{{ editingSession.meta.wikiProcessedResult.processedFacts || 0 }} {{ $t('Archiv.factsExtracted') || 'Informationen extrahiert' }}</div>
+                <div v-if="editingSession.meta.wikiProcessedResult.updatedCategories?.length > 0">
                   {{ $t('Archiv.updatedCategories') || 'Aktualisiert' }}: {{ editingSession.meta.wikiProcessedResult.updatedCategories.join(', ') }}
                 </div>
-                <div v-if="editingSession.meta.wikiProcessedResult.newCategories.length > 0">
+                <div v-if="editingSession.meta.wikiProcessedResult.newCategories?.length > 0">
                   {{ $t('Archiv.newCategories') || 'Neu erstellt' }}: {{ editingSession.meta.wikiProcessedResult.newCategories.join(', ') }}
                 </div>
               </div>
