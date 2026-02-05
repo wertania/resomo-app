@@ -150,6 +150,6 @@ jobs:
       
       - name: Trigger Coolify Deployment
         run: |
-          curl -X POST "${{ secrets.RESOMO_DEPLOY_TRIGGER }}" \
+          curl -X GET "${{ secrets.RESOMO_DEPLOY_TRIGGER }}" \
           -H "Authorization: Bearer ${{ secrets.RESOMO_DEPLOY_TOKEN }}" \
           -H "Content-Type: application/json"
