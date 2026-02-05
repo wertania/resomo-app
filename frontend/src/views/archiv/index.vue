@@ -353,6 +353,14 @@ const fetchSessions = async () => {
 const handleFileSelect = (files: any) => {
   const firstFile = files && files.length > 0 ? files[0] : null
   uploadForm.value.file = firstFile as any
+
+  // Auto-fill name from filename if name field is empty
+  if (firstFile && !uploadForm.value.name) {
+    // Remove file extension to get clean name
+    const fileName = firstFile.name || ''
+    const nameWithoutExtension = fileName.replace(/\.[^/.]+$/, '')
+    uploadForm.value.name = nameWithoutExtension
+  }
 }
 
 const resetUploadForm = () => {
