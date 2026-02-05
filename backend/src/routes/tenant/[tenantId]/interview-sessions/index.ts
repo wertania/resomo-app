@@ -18,7 +18,9 @@ import {
   getInterviewSessionById,
   updateInterviewSession,
   deleteInterviewSession,
+  generateInterviewMarkdown,
 } from "../../../../lib/interview-sessions";
+import { analyzeSpeakerTypes } from "../../../../lib/interview-sessions/speaker-type-analyzer";
 import {
   interviewSessionsSelectSchema,
   interviewSessionsUpdateSchema,
@@ -294,6 +296,136 @@ export default function defineInterviewSessionsRoutes(
       } catch (error) {
         throw new HTTPException(500, {
           message: `Failed to delete interview session: ${(error as Error).message}`,
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /tenant/:tenantId/interview-sessions/:id/markdown
+   * Download interview transcript as markdown/text file
+   */
+  app.get(
+    `${baseRoute}/:id/markdown`,
+    authAndSetUsersInfo,
+    checkUserPermission,
+    describeRoute({
+      tags: ["interview-sessions"],
+      summary: "Download interview markdown",
+      responses: {
+        200: {
+          description: "Interview transcript as markdown text",
+          content: {
+            "text/plain": {},
+          },
+        },
+      },
+    }),
+    validator("param", v.object({ tenantId: v.string(), id: v.string() })),
+    async (c) => {
+      try {
+        const { tenantId, id } = c.req.valid("param");
+        const session = await getInterviewSessionById(id, tenantId);
+
+        if (!session) {
+          throw new HTTPException(404, {
+            message: "Interview session not found",
+          });
+        }
+
+        if (!session.transcript) {
+          throw new HTTPException(400, {
+            message: "Interview session has no transcript",
+          });
+        }
+
+        const markdown = generateInterviewMarkdown(session);
+
+        // Generate filename from session name
+        const filename = `${session.name.replace(/[^a-z0-9_-]/gi, "_")}.txt`;
+
+        // Return as text file download
+        return c.text(markdown, 200, {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Content-Disposition": `attachment; filename="${filename}"`,
+        });
+      } catch (error) {
+        if (error instanceof HTTPException) {
+          throw error;
+        }
+        throw new HTTPException(500, {
+          message: `Failed to generate markdown: ${(error as Error).message}`,
+        });
+      }
+    }
+  );
+
+  /**
+   * POST /tenant/:tenantId/interview-sessions/:id/analyze-speakers
+   * Analyze speaker types using AI and update session metadata
+   */
+  app.post(
+    `${baseRoute}/:id/analyze-speakers`,
+    authAndSetUsersInfo,
+    checkUserPermission,
+    describeRoute({
+      tags: ["interview-sessions"],
+      summary: "Analyze speaker types",
+      responses: {
+        200: {
+          description: "Speaker type analysis result",
+          content: {
+            "application/json": {
+              schema: resolver(
+                v.object({
+                  speakerTypes: v.record(
+                    v.string(),
+                    v.union([v.literal("interviewee"), v.literal("host")])
+                  ),
+                  reasoning: v.optional(v.string()),
+                })
+              ),
+            },
+          },
+        },
+      },
+    }),
+    validator("param", v.object({ tenantId: v.string(), id: v.string() })),
+    async (c) => {
+      try {
+        const { tenantId, id } = c.req.valid("param");
+        const session = await getInterviewSessionById(id, tenantId);
+
+        if (!session) {
+          throw new HTTPException(404, {
+            message: "Interview session not found",
+          });
+        }
+
+        if (!session.transcript) {
+          throw new HTTPException(400, {
+            message: "Interview session has no transcript",
+          });
+        }
+
+        // Run AI analysis
+        const analysis = await analyzeSpeakerTypes(session);
+
+        // Update session metadata with speaker types
+        await updateInterviewSession(id, tenantId, {
+          meta: {
+            ...(session.meta || {}),
+            speakerTypes: analysis.speakerTypes,
+          },
+        });
+
+        return c.json(analysis);
+      } catch (error) {
+        if (error instanceof HTTPException) {
+          throw error;
+        }
+        throw new HTTPException(500, {
+          message: `Failed to analyze speakers: ${(error as Error).message}`,
         });
       }
     }

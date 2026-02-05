@@ -246,3 +246,69 @@ export async function deleteInterviewSession(
       )
     );
 }
+
+/**
+ * Generate markdown from interview transcript with speaker separation
+ * @param session - Interview session with transcript
+ * @returns Formatted markdown string
+ */
+export function generateInterviewMarkdown(
+  session: InterviewSessionsSelect
+): string {
+  if (!session.transcript) {
+    throw new Error("Interview session has no transcript");
+  }
+
+  const { transcript, meta } = session;
+  const speakerTypes = meta?.speakerTypes || {};
+
+  // Header
+  let markdown = `# ${session.name}\n\n`;
+
+  if (session.description) {
+    markdown += `${session.description}\n\n`;
+  }
+
+  markdown += `---\n\n`;
+  markdown += `**Language:** ${transcript.language}\n`;
+  markdown += `**Duration:** ${meta?.duration ? `${Math.round(meta.duration)}s` : "Unknown"}\n`;
+  markdown += `**Date:** ${new Date(session.createdAt).toLocaleString("de-DE")}\n\n`;
+
+  // Speaker types if available
+  if (Object.keys(speakerTypes).length > 0) {
+    markdown += `**Speakers:**\n`;
+    for (const [speakerId, speakerType] of Object.entries(speakerTypes)) {
+      const speakerName = transcript.segments.find(s => s.speaker.id === speakerId)?.speaker.name || `Speaker ${speakerId}`;
+      markdown += `- ${speakerName}: ${speakerType}\n`;
+    }
+    markdown += `\n`;
+  }
+
+  markdown += `---\n\n`;
+
+  // Transcript segments
+  for (const segment of transcript.segments) {
+    const speakerId = segment.speaker.id;
+    const speakerType = speakerTypes[speakerId];
+    const speakerLabel = speakerType
+      ? `${segment.speaker.name} (${speakerType})`
+      : segment.speaker.name;
+
+    const timestamp = formatTimestamp(segment.startTime);
+
+    markdown += `## ${speakerLabel}\n`;
+    markdown += `*[${timestamp}]*\n\n`;
+    markdown += `${segment.text}\n\n`;
+  }
+
+  return markdown;
+}
+
+/**
+ * Format timestamp from seconds to MM:SS format
+ */
+function formatTimestamp(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+}

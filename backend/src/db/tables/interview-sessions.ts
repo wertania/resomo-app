@@ -25,6 +25,7 @@ export type InterviewSessionMeta = {
   transcriptionStatus?: "pending" | "processing" | "completed" | "error";
   elevenlabsTranscriptionId?: string;
   transcriptionErrorMessage?: string;
+  speakerTypes?: Record<string, "interviewee" | "host">; // Speaker ID -> type mapping
 };
 
 export type InterviewSessionTranscript = {

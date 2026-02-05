@@ -26,5 +26,14 @@
   "deleteSuccess": "Interview session deleted successfully",
   "deleteError": "Failed to delete interview session",
   "transcribing": "Transcribing...",
-  "transcriptionError": "Transcription error"
+  "transcriptionError": "Transcription error",
+  "actions": "Actions",
+  "downloadMarkdown": "Download Markdown",
+  "analyzeSpeakers": "Analyze Speakers",
+  "speakerTypes": "Speaker Types",
+  "noTranscript": "No transcript available",
+  "downloadSuccess": "Markdown downloaded successfully",
+  "downloadError": "Failed to download markdown",
+  "analyzeSuccess": "Speaker types analyzed successfully",
+  "analyzeError": "Failed to analyze speaker types"
 }

@@ -206,6 +206,27 @@
         </div>
 
         <div v-if="editingSession.transcript" class="mt-4">
+          <!-- Speaker Types (if analyzed) -->
+          <div v-if="editingSession.meta?.speakerTypes" class="mb-4">
+            <h4 class="mb-2 text-sm font-semibold text-surface-700 dark:text-surface-300">
+              {{ $t('Archiv.speakerTypes') || 'Speaker Types' }}
+            </h4>
+            <div class="flex flex-wrap gap-2">
+              <div
+                v-for="(type, speakerId) in editingSession.meta.speakerTypes"
+                :key="speakerId"
+                class="rounded-full border px-3 py-1 text-xs"
+                :class="{
+                  'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300': type === 'host',
+                  'border-green-500 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300': type === 'interviewee',
+                }"
+              >
+                {{ editingSession.transcript.segments.find(s => s.speaker.id === speakerId)?.speaker.name || `Speaker ${speakerId}` }}:
+                <span class="font-semibold">{{ type }}</span>
+              </div>
+            </div>
+          </div>
+
           <h4 class="mb-2 text-sm font-semibold text-surface-700 dark:text-surface-300">
             {{ $t('Archiv.transcript') || 'Transcript' }}
             <span class="text-xs font-normal text-surface-400">({{ $t('Archiv.readOnly') || 'read-only' }})</span>
@@ -220,6 +241,16 @@
             >
               <div class="mb-1 text-xs font-semibold text-primary">
                 {{ segment.speaker.name }}
+                <span
+                  v-if="editingSession.meta?.speakerTypes?.[segment.speaker.id]"
+                  class="ml-1 rounded px-1.5 py-0.5 text-xs"
+                  :class="{
+                    'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300': editingSession.meta.speakerTypes[segment.speaker.id] === 'host',
+                    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300': editingSession.meta.speakerTypes[segment.speaker.id] === 'interviewee',
+                  }"
+                >
+                  {{ editingSession.meta.speakerTypes[segment.speaker.id] }}
+                </span>
                 <span class="text-surface-400">
                   ({{ formatTime(segment.startTime) }}
                   <span v-if="segment.endTime"> - {{ formatTime(segment.endTime) }}</span>)
@@ -239,23 +270,39 @@
       </div>
 
       <template #footer>
-        <Button
-          :label="$t('Archiv.cancel') || 'Cancel'"
-          severity="secondary"
-          text
-          @click="showEditDialog = false"
-        />
-        <Button
-          :label="$t('Archiv.save') || 'Save'"
-          :disabled="!editForm.name || isSaving"
-          :loading="isSaving"
-          @click="handleSave"
-        />
-        <Button
-          :label="$t('Archiv.delete') || 'Delete'"
-          severity="danger"
-          @click="handleDelete"
-        />
+        <div class="flex w-full items-center justify-between">
+          <!-- Actions Menu -->
+          <Menu ref="actionsMenu" :model="actionMenuItems" :popup="true" />
+          <Button
+            :label="$t('Archiv.actions') || 'Actions'"
+            icon="pi pi-ellipsis-v"
+            severity="secondary"
+            outlined
+            @click="toggleActionsMenu"
+            :disabled="!editingSession?.transcript"
+          />
+
+          <!-- Main Actions -->
+          <div class="flex gap-2">
+            <Button
+              :label="$t('Archiv.cancel') || 'Cancel'"
+              severity="secondary"
+              text
+              @click="showEditDialog = false"
+            />
+            <Button
+              :label="$t('Archiv.save') || 'Save'"
+              :disabled="!editForm.name || isSaving"
+              :loading="isSaving"
+              @click="handleSave"
+            />
+            <Button
+              :label="$t('Archiv.delete') || 'Delete'"
+              severity="danger"
+              @click="handleDelete"
+            />
+          </div>
+        </div>
       </template>
     </Dialog>
   </div>
@@ -280,6 +327,7 @@ interface InterviewSession {
     transcriptionStatus?: 'pending' | 'processing' | 'completed' | 'error'
     elevenlabsTranscriptionId?: string
     transcriptionErrorMessage?: string
+    speakerTypes?: Record<string, 'interviewee' | 'host'>
   }
   transcript?: {
     language: string
@@ -309,6 +357,20 @@ const { t } = useI18n()
 
 const tenantId = computed(() => route.params.tenantId as string || userStore.state.selectedTenant)
 
+const actionMenuItems = computed(() => [
+  {
+    label: t('Archiv.downloadMarkdown') || 'Download Markdown',
+    icon: 'pi pi-download',
+    command: handleDownloadMarkdown,
+  },
+  {
+    label: t('Archiv.analyzeSpeakers') || 'Analyze Speakers',
+    icon: 'pi pi-users',
+    command: handleAnalyzeSpeakers,
+    disabled: isAnalyzing.value || !!editingSession.value?.meta?.speakerTypes,
+  },
+])
+
 const sessions = ref<InterviewSession[]>([])
 const loading = ref(false)
 const showUploadDialog = ref(false)
@@ -317,7 +379,9 @@ const editingSession = ref<InterviewSession | null>(null)
 const isUploading = ref(false)
 const uploadProgress = ref(0)
 const isSaving = ref(false)
+const isAnalyzing = ref(false)
 const refreshInterval = ref<number | null>(null)
+const actionsMenu = ref<any>(null)
 
 const uploadForm = ref({
   file: null as File | null,
@@ -590,6 +654,10 @@ const formatTime = (seconds: number) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
+const toggleActionsMenu = (event: Event) => {
+  actionsMenu.value?.toggle(event)
+}
+
 const startPeriodicRefresh = (sessionId: string) => {
   // Clear any existing interval
   if (refreshInterval.value !== null) {
@@ -599,7 +667,7 @@ const startPeriodicRefresh = (sessionId: string) => {
   // Refresh every 10 seconds until session is completed or error
   refreshInterval.value = window.setInterval(async () => {
     await fetchSessions()
-    
+
     // Check if session is done
     const session = sessions.value.find(s => s.id === sessionId)
     if (session && (session.meta?.transcriptionStatus === 'completed' || session.meta?.transcriptionStatus === 'error')) {
@@ -609,6 +677,111 @@ const startPeriodicRefresh = (sessionId: string) => {
       }
     }
   }, 10000) // Every 10 seconds
+}
+
+const handleDownloadMarkdown = async () => {
+  if (!editingSession.value || !tenantId.value) return
+
+  if (!editingSession.value.transcript) {
+    toast.add({
+      severity: 'warn',
+      summary: t('warning') || 'Warning',
+      detail: t('Archiv.noTranscript') || 'No transcript available',
+      life: 3000,
+    })
+    return
+  }
+
+  try {
+    const response = await fetch(
+      `/api/v1/tenant/${tenantId.value}/interview-sessions/${editingSession.value.id}/markdown`
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to download markdown')
+    }
+
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${editingSession.value.name.replace(/[^a-z0-9_-]/gi, '_')}.txt`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+
+    toast.add({
+      severity: 'success',
+      summary: t('success') || 'Success',
+      detail: t('Archiv.downloadSuccess') || 'Markdown downloaded successfully',
+      life: 3000,
+    })
+  } catch (error: any) {
+    toast.add({
+      severity: 'error',
+      summary: t('error') || 'Error',
+      detail: error.message || (t('Archiv.downloadError') || 'Failed to download markdown'),
+      life: 3000,
+    })
+  }
+}
+
+const handleAnalyzeSpeakers = async () => {
+  if (!editingSession.value || !tenantId.value) return
+
+  if (!editingSession.value.transcript) {
+    toast.add({
+      severity: 'warn',
+      summary: t('warning') || 'Warning',
+      detail: t('Archiv.noTranscript') || 'No transcript available',
+      life: 3000,
+    })
+    return
+  }
+
+  isAnalyzing.value = true
+  try {
+    const result = await fetcher.post<{
+      speakerTypes: Record<string, 'interviewee' | 'host'>
+      reasoning?: string
+    }>(
+      `/api/v1/tenant/${tenantId.value}/interview-sessions/${editingSession.value.id}/analyze-speakers`,
+      {}
+    )
+
+    // Update local state
+    const index = sessions.value.findIndex((s) => s.id === editingSession.value!.id)
+    if (index !== -1 && sessions.value[index]) {
+      const session = sessions.value[index]
+      if (!session.meta) {
+        session.meta = {}
+      }
+      session.meta.speakerTypes = result.speakerTypes
+    }
+    if (editingSession.value) {
+      if (!editingSession.value.meta) {
+        editingSession.value.meta = {}
+      }
+      editingSession.value.meta.speakerTypes = result.speakerTypes
+    }
+
+    toast.add({
+      severity: 'success',
+      summary: t('success') || 'Success',
+      detail: t('Archiv.analyzeSuccess') || 'Speaker types analyzed successfully',
+      life: 3000,
+    })
+  } catch (error: any) {
+    toast.add({
+      severity: 'error',
+      summary: t('error') || 'Error',
+      detail: error.message || (t('Archiv.analyzeError') || 'Failed to analyze speaker types'),
+      life: 3000,
+    })
+  } finally {
+    isAnalyzing.value = false
+  }
 }
 
 onMounted(() => {

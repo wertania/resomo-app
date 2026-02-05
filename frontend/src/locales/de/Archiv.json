@@ -26,5 +26,14 @@
   "deleteSuccess": "Interview-Sitzung erfolgreich gelöscht",
   "deleteError": "Fehler beim Löschen der Interview-Sitzung",
   "transcribing": "Wird transkribiert...",
-  "transcriptionError": "Transkriptionsfehler"
+  "transcriptionError": "Transkriptionsfehler",
+  "actions": "Aktionen",
+  "downloadMarkdown": "Markdown herunterladen",
+  "analyzeSpeakers": "Sprecher analysieren",
+  "speakerTypes": "Sprecher-Typen",
+  "noTranscript": "Kein Transkript verfügbar",
+  "downloadSuccess": "Markdown erfolgreich heruntergeladen",
+  "downloadError": "Fehler beim Herunterladen des Markdowns",
+  "analyzeSuccess": "Sprecher-Typen erfolgreich analysiert",
+  "analyzeError": "Fehler beim Analysieren der Sprecher-Typen"
 }
