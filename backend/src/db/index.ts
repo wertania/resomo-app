@@ -1,1 +1,1 @@
-const PREFIX = "base_";
+export const PREFIX = "base_";
