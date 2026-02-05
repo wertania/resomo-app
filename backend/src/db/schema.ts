@@ -4,3 +4,4 @@
 // ============================================================================
 
 export * from "./tables/interview-sessions";
+export * from "./tables/chats";

@@ -15,6 +15,13 @@
       "when": 1769251073015,
       "tag": "0001_clumsy_wallflower",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770289705130,
+      "tag": "0002_sleepy_mentallo",
+      "breakpoints": true
     }
   ]
 }
