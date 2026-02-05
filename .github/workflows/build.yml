@@ -147,3 +147,9 @@ jobs:
       - name: Push Docker image
         run: |
           docker push ghcr.io/symbiosika/${{ github.event.repository.name }}-${{ github.ref_name }}:1
+      
+      - name: Trigger Coolify Deployment
+        run: |
+          curl -X POST "${{ secrets.RESOMO_DEPLOY_TRIGGER }}" \
+          -H "Authorization: Bearer ${{ secrets.RESOMO_DEPLOY_TOKEN }}" \
+          -H "Content-Type: application/json"
