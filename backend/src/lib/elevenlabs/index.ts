@@ -155,55 +155,58 @@ export async function pollTranscriptionStatus(
 
   const words = transcription.words || [];
   if (words.length > 0) {
-    // Group words by speaker
-    const speakerGroups: Record<
-      string,
-      Array<{
-        text: string;
-        startTime: number;
-        endTime?: number;
-        speakerId?: string;
-      }>
-    > = {};
+    // Create segments chronologically - new segment on each speaker change
+    let currentSegmentWords: Array<{
+      text: string;
+      startTime: number;
+      endTime?: number;
+    }> = [];
+    let currentSpeakerId: string | null = null;
 
-    words.forEach((word: any) => {
-      const speakerId = word.speakerId || word.speaker_id || "unknown";
-      if (!speakerGroups[speakerId]) {
-        speakerGroups[speakerId] = [];
-      }
-      speakerGroups[speakerId].push({
-        text: word.word || word.text || "",
-        startTime: word.startTime || word.start_time || 0,
-        endTime: word.endTime || word.end_time,
-        speakerId,
-      });
-    });
+    const flushSegment = () => {
+      if (currentSegmentWords.length === 0 || currentSpeakerId === null) return;
 
-    // Create segments from speaker groups
-    Object.entries(speakerGroups).forEach(([speakerId, words]) => {
-      if (!words || words.length === 0) return;
-
-      const segmentText = words.map((w) => w.text).join(" ");
-      const firstWord = words[0];
-      const lastWord = words[words.length - 1];
-      const startTime = firstWord?.startTime || 0;
-      const endTime = lastWord?.endTime;
+      const segmentText = currentSegmentWords.map((w) => w.text).join(" ");
+      const firstWord = currentSegmentWords[0];
+      const lastWord = currentSegmentWords[currentSegmentWords.length - 1];
 
       segments.push({
         text: segmentText,
-        startTime,
-        endTime,
+        startTime: firstWord?.startTime || 0,
+        endTime: lastWord?.endTime,
         speaker: {
-          name: `Speaker ${speakerId}`,
-          id: speakerId,
+          name: `Speaker ${currentSpeakerId}`,
+          id: currentSpeakerId,
         },
-        words: words.map((w) => ({
+        words: currentSegmentWords.map((w) => ({
           text: w.text,
           startTime: w.startTime,
           endTime: w.endTime,
         })),
       });
+
+      currentSegmentWords = [];
+    };
+
+    words.forEach((word: any) => {
+      const speakerId = word.speakerId || word.speaker_id || "unknown";
+      const wordData = {
+        text: word.word || word.text || "",
+        startTime: word.startTime || word.start_time || 0,
+        endTime: word.endTime || word.end_time,
+      };
+
+      // If speaker changed, flush current segment and start new one
+      if (currentSpeakerId !== null && speakerId !== currentSpeakerId) {
+        flushSegment();
+      }
+
+      currentSpeakerId = speakerId;
+      currentSegmentWords.push(wordData);
     });
+
+    // Flush the last segment
+    flushSegment();
   } else if (transcription.text) {
     // Fallback: if no word-level data, create a single segment
     segments.push({
