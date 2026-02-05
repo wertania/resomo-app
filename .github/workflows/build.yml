@@ -146,4 +146,4 @@ jobs:
           password: ${{ secrets.BE_GH_REGISTRY_KEY }}
       - name: Push Docker image
         run: |
-          docker push ghcr.io/wertania/${{ github.event.repository.name }}-${{ github.ref_name }}:1
+          docker push ghcr.io/symbiosika/${{ github.event.repository.name }}-${{ github.ref_name }}:1
