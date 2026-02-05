@@ -35,5 +35,8 @@
   "downloadSuccess": "Markdown erfolgreich heruntergeladen",
   "downloadError": "Fehler beim Herunterladen des Markdowns",
   "analyzeSuccess": "Sprecher-Typen erfolgreich analysiert",
-  "analyzeError": "Fehler beim Analysieren der Sprecher-Typen"
+  "analyzeError": "Fehler beim Analysieren der Sprecher-Typen",
+  "mainCharacter": "Hauptperson",
+  "selectMainCharacter": "Hauptperson auswählen...",
+  "mainCharacterHint": "Die Person, um die es in diesem Interview geht"
 }

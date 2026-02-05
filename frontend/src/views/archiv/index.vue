@@ -70,10 +70,18 @@
               </div>
               <div
                 v-if="session.transcript?.segments"
-                class="mt-3 text-xs text-surface-500 dark:text-surface-400"
+                class="mt-3 flex flex-wrap items-center gap-2 text-xs text-surface-500 dark:text-surface-400"
               >
-                {{ session.transcript.segments.length }}
-                {{ $t('Archiv.segments') || 'segments' }}
+                <span>
+                  {{ session.transcript.segments.length }}
+                  {{ $t('Archiv.segments') || 'segments' }}
+                </span>
+                <span
+                  v-if="session.meta?.mainCharacterId"
+                  class="rounded-full bg-yellow-100 px-2 py-0.5 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+                >
+                  ⭐ {{ getMainCharacterName(session) }}
+                </span>
               </div>
               <div
                 v-else-if="session.meta?.transcriptionStatus === 'pending' || session.meta?.transcriptionStatus === 'processing'"
@@ -206,6 +214,25 @@
         </div>
 
         <div v-if="editingSession.transcript" class="mt-4">
+          <!-- Main Character Selection -->
+          <div class="mb-4">
+            <h4 class="mb-2 text-sm font-semibold text-surface-700 dark:text-surface-300">
+              {{ $t('Archiv.mainCharacter') || 'Main Character' }}
+            </h4>
+            <Select
+              v-model="editForm.mainCharacterId"
+              :options="availableSpeakers"
+              option-label="name"
+              option-value="id"
+              :placeholder="$t('Archiv.selectMainCharacter') || 'Select the main character...'"
+              class="w-full"
+              show-clear
+            />
+            <small class="text-surface-500 dark:text-surface-400">
+              {{ $t('Archiv.mainCharacterHint') || 'The person this interview is about' }}
+            </small>
+          </div>
+
           <!-- Speaker Types (if analyzed) -->
           <div v-if="editingSession.meta?.speakerTypes" class="mb-4">
             <h4 class="mb-2 text-sm font-semibold text-surface-700 dark:text-surface-300">
@@ -219,10 +246,12 @@
                 :class="{
                   'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300': type === 'host',
                   'border-green-500 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300': type === 'interviewee',
+                  'ring-2 ring-yellow-400': speakerId === editingSession.meta?.mainCharacterId,
                 }"
               >
                 {{ editingSession.transcript.segments.find(s => s.speaker.id === speakerId)?.speaker.name || `Speaker ${speakerId}` }}:
                 <span class="font-semibold">{{ type }}</span>
+                <span v-if="speakerId === editingSession.meta?.mainCharacterId" class="ml-1">⭐</span>
               </div>
             </div>
           </div>
@@ -328,6 +357,7 @@ interface InterviewSession {
     elevenlabsTranscriptionId?: string
     transcriptionErrorMessage?: string
     speakerTypes?: Record<string, 'interviewee' | 'host'>
+    mainCharacterId?: string // Speaker ID of the main character
   }
   transcript?: {
     language: string
@@ -392,6 +422,23 @@ const uploadForm = ref({
 const editForm = ref({
   name: '',
   description: '',
+  mainCharacterId: null as string | null,
+})
+
+// Computed: Available speakers from transcript for selection
+const availableSpeakers = computed(() => {
+  if (!editingSession.value?.transcript?.segments) return []
+  
+  const speakersMap = new Map<string, { id: string; name: string }>()
+  for (const segment of editingSession.value.transcript.segments) {
+    if (!speakersMap.has(segment.speaker.id)) {
+      speakersMap.set(segment.speaker.id, {
+        id: segment.speaker.id,
+        name: segment.speaker.name,
+      })
+    }
+  }
+  return Array.from(speakersMap.values())
 })
 
 const fetchSessions = async () => {
@@ -566,6 +613,7 @@ const openEditDialog = (session: InterviewSession) => {
   editForm.value = {
     name: session.name,
     description: session.description || '',
+    mainCharacterId: session.meta?.mainCharacterId || null,
   }
   showEditDialog.value = true
 }
@@ -575,12 +623,30 @@ const handleSave = async () => {
 
   isSaving.value = true
   try {
+    // Check if mainCharacterId changed
+    const currentMainCharacterId = editingSession.value.meta?.mainCharacterId || null
+    const newMainCharacterId = editForm.value.mainCharacterId
+
+    // Build update payload
+    const updatePayload: {
+      name: string
+      description?: string
+      meta?: { mainCharacterId?: string }
+    } = {
+      name: editForm.value.name,
+      description: editForm.value.description || undefined,
+    }
+
+    // Include mainCharacterId in meta if it changed
+    if (newMainCharacterId !== currentMainCharacterId) {
+      updatePayload.meta = {
+        mainCharacterId: newMainCharacterId || undefined,
+      }
+    }
+
     const updated = await fetcher.patch<InterviewSession>(
       `/api/v1/tenant/${tenantId.value}/interview-sessions/${editingSession.value.id}`,
-      {
-        name: editForm.value.name,
-        description: editForm.value.description || undefined,
-      }
+      updatePayload
     )
 
     // Update local state
@@ -652,6 +718,12 @@ const formatTime = (seconds: number) => {
   const mins = Math.floor(seconds / 60)
   const secs = Math.floor(seconds % 60)
   return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+const getMainCharacterName = (session: InterviewSession) => {
+  if (!session.meta?.mainCharacterId || !session.transcript?.segments) return ''
+  const segment = session.transcript.segments.find(s => s.speaker.id === session.meta?.mainCharacterId)
+  return segment?.speaker.name || `Speaker ${session.meta.mainCharacterId}`
 }
 
 const toggleActionsMenu = (event: Event) => {

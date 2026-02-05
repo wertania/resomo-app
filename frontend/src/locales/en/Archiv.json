@@ -35,5 +35,8 @@
   "downloadSuccess": "Markdown downloaded successfully",
   "downloadError": "Failed to download markdown",
   "analyzeSuccess": "Speaker types analyzed successfully",
-  "analyzeError": "Failed to analyze speaker types"
+  "analyzeError": "Failed to analyze speaker types",
+  "mainCharacter": "Main Character",
+  "selectMainCharacter": "Select main character...",
+  "mainCharacterHint": "The person this interview is about"
 }

@@ -237,6 +237,7 @@ export default function defineInterviewSessionsRoutes(
         meta: v.optional(
           v.object({
             duration: v.optional(v.number()),
+            mainCharacterId: v.optional(v.string()), // Speaker ID of the main character
           })
         ),
       })
@@ -355,6 +356,132 @@ export default function defineInterviewSessionsRoutes(
         }
         throw new HTTPException(500, {
           message: `Failed to generate markdown: ${(error as Error).message}`,
+        });
+      }
+    }
+  );
+
+  /**
+   * PUT /tenant/:tenantId/interview-sessions/:id/main-character
+   * Set the main character (the person the app is centered around) for this interview
+   */
+  app.put(
+    `${baseRoute}/:id/main-character`,
+    authAndSetUsersInfo,
+    checkUserPermission,
+    describeRoute({
+      tags: ["interview-sessions"],
+      summary: "Set main character for interview",
+      description: "Set which speaker is the main character (the person the app is centered around)",
+      responses: {
+        200: {
+          description: "Updated interview session",
+          content: {
+            "application/json": {
+              schema: resolver(interviewSessionsSelectSchema),
+            },
+          },
+        },
+      },
+    }),
+    validator("param", v.object({ tenantId: v.string(), id: v.string() })),
+    validator(
+      "json",
+      v.object({
+        speakerId: v.string(), // The speaker ID to set as main character
+      })
+    ),
+    async (c) => {
+      try {
+        const { tenantId, id } = c.req.valid("param");
+        const { speakerId } = c.req.valid("json");
+        
+        const session = await getInterviewSessionById(id, tenantId);
+
+        if (!session) {
+          throw new HTTPException(404, {
+            message: "Interview session not found",
+          });
+        }
+
+        // Validate that the speaker exists in the transcript
+        if (session.transcript) {
+          const speakerIds = session.transcript.segments.map(s => s.speaker.id);
+          if (!speakerIds.includes(speakerId)) {
+            throw new HTTPException(400, {
+              message: `Speaker ID "${speakerId}" not found in transcript. Available speakers: ${[...new Set(speakerIds)].join(", ")}`,
+            });
+          }
+        }
+
+        // Update session with main character
+        const updatedSession = await updateInterviewSession(id, tenantId, {
+          meta: {
+            mainCharacterId: speakerId,
+          },
+        });
+
+        return c.json(updatedSession);
+      } catch (error) {
+        if (error instanceof HTTPException) {
+          throw error;
+        }
+        throw new HTTPException(500, {
+          message: `Failed to set main character: ${(error as Error).message}`,
+        });
+      }
+    }
+  );
+
+  /**
+   * DELETE /tenant/:tenantId/interview-sessions/:id/main-character
+   * Remove the main character setting from this interview
+   */
+  app.delete(
+    `${baseRoute}/:id/main-character`,
+    authAndSetUsersInfo,
+    checkUserPermission,
+    describeRoute({
+      tags: ["interview-sessions"],
+      summary: "Remove main character setting",
+      responses: {
+        200: {
+          description: "Updated interview session",
+          content: {
+            "application/json": {
+              schema: resolver(interviewSessionsSelectSchema),
+            },
+          },
+        },
+      },
+    }),
+    validator("param", v.object({ tenantId: v.string(), id: v.string() })),
+    async (c) => {
+      try {
+        const { tenantId, id } = c.req.valid("param");
+        
+        const session = await getInterviewSessionById(id, tenantId);
+
+        if (!session) {
+          throw new HTTPException(404, {
+            message: "Interview session not found",
+          });
+        }
+
+        // Remove mainCharacterId from meta
+        const updatedSession = await updateInterviewSession(id, tenantId, {
+          meta: {
+            mainCharacterId: undefined,
+          },
+        });
+
+        return c.json(updatedSession);
+      } catch (error) {
+        if (error instanceof HTTPException) {
+          throw error;
+        }
+        throw new HTTPException(500, {
+          message: `Failed to remove main character: ${(error as Error).message}`,
         });
       }
     }

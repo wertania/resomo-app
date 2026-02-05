@@ -86,6 +86,7 @@ export async function getInterviewSessionById(
 
 /**
  * Update an interview session (name, description, meta only - transcript is read-only)
+ * Note: meta fields are merged, not replaced entirely
  */
 export async function updateInterviewSession(
   id: string,
@@ -93,10 +94,16 @@ export async function updateInterviewSession(
   data: {
     name?: string;
     description?: string;
-    meta?: InterviewSessionMeta;
+    meta?: Partial<InterviewSessionMeta>;
   }
 ): Promise<InterviewSessionsSelect> {
   const db = getDb();
+
+  // Get current session to merge meta
+  const currentSession = await getInterviewSessionById(id, tenantId);
+  if (!currentSession) {
+    throw new Error("Interview session not found");
+  }
 
   const updateData: Partial<InterviewSessionsInsert> = {
     updatedAt: new Date().toISOString(),
@@ -109,7 +116,11 @@ export async function updateInterviewSession(
     updateData.description = data.description;
   }
   if (data.meta !== undefined) {
-    updateData.meta = data.meta;
+    // Merge meta fields instead of replacing entirely
+    updateData.meta = {
+      ...(currentSession.meta || {}),
+      ...data.meta,
+    };
   }
 
   const [session] = await db
@@ -124,7 +135,7 @@ export async function updateInterviewSession(
     .returning();
 
   if (!session) {
-    throw new Error("Interview session not found or update failed");
+    throw new Error("Interview session update failed");
   }
 
   return session;
@@ -261,6 +272,7 @@ export function generateInterviewMarkdown(
 
   const { transcript, meta } = session;
   const speakerTypes = meta?.speakerTypes || {};
+  const mainCharacterId = meta?.mainCharacterId;
 
   // Header
   let markdown = `# ${session.name}\n\n`;
@@ -275,11 +287,25 @@ export function generateInterviewMarkdown(
   markdown += `**Date:** ${new Date(session.createdAt).toLocaleString("de-DE")}\n\n`;
 
   // Speaker types if available
-  if (Object.keys(speakerTypes).length > 0) {
+  const uniqueSpeakers = Array.from(
+    new Set(transcript.segments.map(s => s.speaker.id))
+  );
+  
+  if (uniqueSpeakers.length > 0) {
     markdown += `**Speakers:**\n`;
-    for (const [speakerId, speakerType] of Object.entries(speakerTypes)) {
+    for (const speakerId of uniqueSpeakers) {
       const speakerName = transcript.segments.find(s => s.speaker.id === speakerId)?.speaker.name || `Speaker ${speakerId}`;
-      markdown += `- ${speakerName}: ${speakerType}\n`;
+      const speakerType = speakerTypes[speakerId];
+      const isMainCharacter = speakerId === mainCharacterId;
+      
+      let speakerLine = `- ${speakerName}`;
+      if (speakerType) {
+        speakerLine += `: ${speakerType}`;
+      }
+      if (isMainCharacter) {
+        speakerLine += ` **[Main Character]**`;
+      }
+      markdown += `${speakerLine}\n`;
     }
     markdown += `\n`;
   }
@@ -290,9 +316,15 @@ export function generateInterviewMarkdown(
   for (const segment of transcript.segments) {
     const speakerId = segment.speaker.id;
     const speakerType = speakerTypes[speakerId];
-    const speakerLabel = speakerType
-      ? `${segment.speaker.name} (${speakerType})`
-      : segment.speaker.name;
+    const isMainCharacter = speakerId === mainCharacterId;
+    
+    let speakerLabel = segment.speaker.name;
+    if (speakerType) {
+      speakerLabel += ` (${speakerType})`;
+    }
+    if (isMainCharacter) {
+      speakerLabel += ` [Main]`;
+    }
 
     const timestamp = formatTimestamp(segment.startTime);
 
