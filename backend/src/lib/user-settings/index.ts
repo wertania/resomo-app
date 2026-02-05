@@ -85,3 +85,42 @@ export async function saveUserSettings(
     });
   }
 }
+
+/**
+ * Settings type definition matching the frontend structure
+ */
+export interface UserSettingsData {
+  wiki?: {
+    digitalTwin?: {
+      entryPoint?: string;
+    };
+  };
+  [key: string]: any;
+}
+
+/**
+ * Get user settings for a specific user and tenant
+ * Convenience function that returns typed settings
+ */
+export async function getUserSettingsByUserIdAndTenant(
+  userId: string,
+  tenantId: string
+): Promise<UserSettingsData | null> {
+  const settings = await getUserSettings(userId, tenantId);
+  if (Object.keys(settings).length === 0) {
+    return null;
+  }
+  return settings as UserSettingsData;
+}
+
+/**
+ * Get the digital twin entry point ID from user settings
+ * Convenience function to extract the nested value
+ */
+export async function getDigitalTwinEntryPointId(
+  userId: string,
+  tenantId: string
+): Promise<string | null> {
+  const settings = await getUserSettingsByUserIdAndTenant(userId, tenantId);
+  return settings?.wiki?.digitalTwin?.entryPoint || null;
+}

@@ -46,8 +46,8 @@
           />
         </div>
 
-        <!-- Company Knowledge Section -->
-        <div>
+        <!-- Company Knowledge Section (hidden - not needed in this app) -->
+        <div v-if="false">
           <div class="mb-2 flex items-center justify-between">
             <div class="flex items-center gap-2 text-sm font-semibold text-surface-700 dark:text-surface-300">
               <IconCompany class="h-4 w-4" />

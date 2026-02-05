@@ -27,6 +27,14 @@ export type InterviewSessionMeta = {
   transcriptionErrorMessage?: string;
   speakerTypes?: Record<string, "interviewee" | "host">; // Speaker ID -> type mapping
   mainCharacterId?: string; // Speaker ID of the main character (the person the app is centered around)
+  // Wiki processing fields
+  wikiProcessed?: boolean;
+  wikiProcessedAt?: string;
+  wikiProcessedResult?: {
+    processedFacts: number;
+    updatedCategories: string[];
+    newCategories: string[];
+  };
 };
 
 export type InterviewSessionTranscript = {

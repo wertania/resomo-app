@@ -38,5 +38,15 @@
   "analyzeError": "Fehler beim Analysieren der Sprecher-Typen",
   "mainCharacter": "Hauptperson",
   "selectMainCharacter": "Hauptperson auswählen...",
-  "mainCharacterHint": "Die Person, um die es in diesem Interview geht"
+  "mainCharacterHint": "Die Person, um die es in diesem Interview geht",
+  "extractKnowledge": "Wissen extrahieren",
+  "noMainCharacter": "Bitte zuerst die Hauptperson auswählen",
+  "extractSuccess": "{facts} Informationen extrahiert. {updated} Kategorien aktualisiert, {new} neue Kategorien erstellt.",
+  "extractError": "Fehler beim Extrahieren des Wissens",
+  "wikiStatus": "Wiki-Status",
+  "wikiProcessed": "Wissen wurde ins Wiki extrahiert",
+  "factsExtracted": "Informationen extrahiert",
+  "updatedCategories": "Aktualisiert",
+  "newCategories": "Neu erstellt",
+  "wikiDone": "Wiki"
 }

@@ -82,6 +82,12 @@
                 >
                   ⭐ {{ getMainCharacterName(session) }}
                 </span>
+                <span
+                  v-if="session.meta?.wikiProcessed"
+                  class="rounded-full bg-green-100 px-2 py-0.5 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                >
+                  📚 {{ $t('Archiv.wikiDone') || 'Wiki' }}
+                </span>
               </div>
               <div
                 v-else-if="session.meta?.transcriptionStatus === 'pending' || session.meta?.transcriptionStatus === 'processing'"
@@ -256,6 +262,31 @@
             </div>
           </div>
 
+          <!-- Wiki Processing Status -->
+          <div v-if="editingSession.meta?.wikiProcessed" class="mb-4">
+            <h4 class="mb-2 text-sm font-semibold text-surface-700 dark:text-surface-300">
+              {{ $t('Archiv.wikiStatus') || 'Wiki Status' }}
+            </h4>
+            <div class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20">
+              <div class="flex items-center gap-2 text-sm text-green-700 dark:text-green-300">
+                <span class="text-lg">✅</span>
+                <span>{{ $t('Archiv.wikiProcessed') || 'Wissen wurde ins Wiki extrahiert' }}</span>
+              </div>
+              <div v-if="editingSession.meta.wikiProcessedResult" class="mt-2 text-xs text-green-600 dark:text-green-400">
+                <div>{{ editingSession.meta.wikiProcessedResult.processedFacts }} {{ $t('Archiv.factsExtracted') || 'Informationen extrahiert' }}</div>
+                <div v-if="editingSession.meta.wikiProcessedResult.updatedCategories.length > 0">
+                  {{ $t('Archiv.updatedCategories') || 'Aktualisiert' }}: {{ editingSession.meta.wikiProcessedResult.updatedCategories.join(', ') }}
+                </div>
+                <div v-if="editingSession.meta.wikiProcessedResult.newCategories.length > 0">
+                  {{ $t('Archiv.newCategories') || 'Neu erstellt' }}: {{ editingSession.meta.wikiProcessedResult.newCategories.join(', ') }}
+                </div>
+              </div>
+              <div v-if="editingSession.meta.wikiProcessedAt" class="mt-1 text-xs text-surface-500">
+                {{ new Date(editingSession.meta.wikiProcessedAt).toLocaleString('de-DE') }}
+              </div>
+            </div>
+          </div>
+
           <h4 class="mb-2 text-sm font-semibold text-surface-700 dark:text-surface-300">
             {{ $t('Archiv.transcript') || 'Transcript' }}
             <span class="text-xs font-normal text-surface-400">({{ $t('Archiv.readOnly') || 'read-only' }})</span>
@@ -358,6 +389,14 @@ interface InterviewSession {
     transcriptionErrorMessage?: string
     speakerTypes?: Record<string, 'interviewee' | 'host'>
     mainCharacterId?: string // Speaker ID of the main character
+    // Wiki processing fields
+    wikiProcessed?: boolean
+    wikiProcessedAt?: string
+    wikiProcessedResult?: {
+      processedFacts: number
+      updatedCategories: string[]
+      newCategories: string[]
+    }
   }
   transcript?: {
     language: string
@@ -399,6 +438,15 @@ const actionMenuItems = computed(() => [
     command: handleAnalyzeSpeakers,
     disabled: isAnalyzing.value || !!editingSession.value?.meta?.speakerTypes,
   },
+  {
+    separator: true,
+  },
+  {
+    label: t('Archiv.extractKnowledge') || 'Wissen extrahieren',
+    icon: 'pi pi-book',
+    command: handleExtractKnowledge,
+    disabled: isExtractingKnowledge.value || !editingSession.value?.meta?.mainCharacterId,
+  },
 ])
 
 const sessions = ref<InterviewSession[]>([])
@@ -410,6 +458,7 @@ const isUploading = ref(false)
 const uploadProgress = ref(0)
 const isSaving = ref(false)
 const isAnalyzing = ref(false)
+const isExtractingKnowledge = ref(false)
 const refreshInterval = ref<number | null>(null)
 const actionsMenu = ref<any>(null)
 
@@ -853,6 +902,109 @@ const handleAnalyzeSpeakers = async () => {
     })
   } finally {
     isAnalyzing.value = false
+  }
+}
+
+const handleExtractKnowledge = async () => {
+  if (!editingSession.value || !tenantId.value) return
+
+  if (!editingSession.value.transcript) {
+    toast.add({
+      severity: 'warn',
+      summary: t('warning') || 'Warnung',
+      detail: t('Archiv.noTranscript') || 'Kein Transkript vorhanden',
+      life: 3000,
+    })
+    return
+  }
+
+  if (!editingSession.value.meta?.mainCharacterId) {
+    toast.add({
+      severity: 'warn',
+      summary: t('warning') || 'Warnung',
+      detail: t('Archiv.noMainCharacter') || 'Bitte zuerst die Hauptperson auswählen',
+      life: 3000,
+    })
+    return
+  }
+
+  isExtractingKnowledge.value = true
+  try {
+    const result = await fetcher.post<{
+      success: boolean
+      processedFacts: number
+      updatedCategories: string[]
+      newCategories: string[]
+      errors: string[]
+      interviewEntryId?: string
+    }>(
+      `/api/v1/tenant/${tenantId.value}/interview-sessions/${editingSession.value.id}/process-wiki`,
+      {}
+    )
+
+    // Update local state
+    const index = sessions.value.findIndex((s) => s.id === editingSession.value!.id)
+    if (index !== -1 && sessions.value[index]) {
+      const session = sessions.value[index]
+      if (!session.meta) {
+        session.meta = {}
+      }
+      session.meta.wikiProcessed = true
+      session.meta.wikiProcessedAt = new Date().toISOString()
+      session.meta.wikiProcessedResult = {
+        processedFacts: result.processedFacts,
+        updatedCategories: result.updatedCategories,
+        newCategories: result.newCategories,
+      }
+    }
+    if (editingSession.value) {
+      if (!editingSession.value.meta) {
+        editingSession.value.meta = {}
+      }
+      editingSession.value.meta.wikiProcessed = true
+      editingSession.value.meta.wikiProcessedAt = new Date().toISOString()
+      editingSession.value.meta.wikiProcessedResult = {
+        processedFacts: result.processedFacts,
+        updatedCategories: result.updatedCategories,
+        newCategories: result.newCategories,
+      }
+    }
+
+    if (result.success) {
+      toast.add({
+        severity: 'success',
+        summary: t('success') || 'Erfolg',
+        detail: t('Archiv.extractSuccess', { facts: result.processedFacts, updated: result.updatedCategories.length, new: result.newCategories.length }) 
+          || `${result.processedFacts} Informationen extrahiert. ${result.updatedCategories.length} Kategorien aktualisiert, ${result.newCategories.length} neue Kategorien erstellt.`,
+        life: 5000,
+      })
+
+      // Show warnings if any errors
+      if (result.errors && result.errors.length > 0) {
+        toast.add({
+          severity: 'warn',
+          summary: t('warning') || 'Warnung',
+          detail: result.errors.join(', '),
+          life: 5000,
+        })
+      }
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: t('error') || 'Fehler',
+        detail: result.errors?.join(', ') || t('Archiv.extractError') || 'Fehler beim Extrahieren',
+        life: 5000,
+      })
+    }
+  } catch (error: any) {
+    toast.add({
+      severity: 'error',
+      summary: t('error') || 'Fehler',
+      detail: error.message || (t('Archiv.extractError') || 'Fehler beim Extrahieren des Wissens'),
+      life: 5000,
+    })
+  } finally {
+    isExtractingKnowledge.value = false
   }
 }
 

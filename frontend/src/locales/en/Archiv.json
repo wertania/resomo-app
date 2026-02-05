@@ -38,5 +38,15 @@
   "analyzeError": "Failed to analyze speaker types",
   "mainCharacter": "Main Character",
   "selectMainCharacter": "Select main character...",
-  "mainCharacterHint": "The person this interview is about"
+  "mainCharacterHint": "The person this interview is about",
+  "extractKnowledge": "Extract Knowledge",
+  "noMainCharacter": "Please select the main character first",
+  "extractSuccess": "{facts} facts extracted. {updated} categories updated, {new} new categories created.",
+  "extractError": "Failed to extract knowledge",
+  "wikiStatus": "Wiki Status",
+  "wikiProcessed": "Knowledge has been extracted to wiki",
+  "factsExtracted": "facts extracted",
+  "updatedCategories": "Updated",
+  "newCategories": "Created",
+  "wikiDone": "Wiki"
 }

@@ -20,6 +20,8 @@ import {
   deleteInterviewSession,
   generateInterviewMarkdown,
 } from "../../../../lib/interview-sessions";
+import { processInterview } from "../../../../lib/knowledge/personal-wiki-agent";
+import { getDigitalTwinEntryPointId } from "../../../../lib/user-settings";
 import { analyzeSpeakerTypes } from "../../../../lib/interview-sessions/speaker-type-analyzer";
 import {
   interviewSessionsSelectSchema,
@@ -553,6 +555,121 @@ export default function defineInterviewSessionsRoutes(
         }
         throw new HTTPException(500, {
           message: `Failed to analyze speakers: ${(error as Error).message}`,
+        });
+      }
+    }
+  );
+
+  /**
+   * POST /tenant/:tenantId/interview-sessions/:id/process-wiki
+   * Process interview and extract personal information into the wiki
+   */
+  app.post(
+    `${baseRoute}/:id/process-wiki`,
+    authAndSetUsersInfo,
+    checkUserPermission,
+    describeRoute({
+      tags: ["interview-sessions"],
+      summary: "Process interview for personal wiki",
+      description: "Extract personal information from interview and save to wiki. Requires mainCharacterId and configured digital twin entry point.",
+      responses: {
+        200: {
+          description: "Processing result",
+          content: {
+            "application/json": {
+              schema: resolver(
+                v.object({
+                  success: v.boolean(),
+                  processedFacts: v.number(),
+                  updatedCategories: v.array(v.string()),
+                  newCategories: v.array(v.string()),
+                  errors: v.array(v.string()),
+                  interviewEntryId: v.optional(v.string()),
+                })
+              ),
+            },
+          },
+        },
+      },
+    }),
+    validator("param", v.object({ tenantId: v.string(), id: v.string() })),
+    async (c) => {
+      try {
+        const { tenantId, id } = c.req.valid("param");
+        const userId = c.get("usersId");
+        
+        // Get interview session
+        const session = await getInterviewSessionById(id, tenantId);
+        if (!session) {
+          throw new HTTPException(404, {
+            message: "Interview session not found",
+          });
+        }
+
+        // Check if transcript exists
+        if (!session.transcript) {
+          throw new HTTPException(400, {
+            message: "Interview session has no transcript. Please wait for transcription to complete.",
+          });
+        }
+
+        // Check if mainCharacterId is set
+        const mainCharacterId = session.meta?.mainCharacterId;
+        if (!mainCharacterId) {
+          throw new HTTPException(400, {
+            message: "Main character not set. Please set the main character (Hauptperson) first.",
+          });
+        }
+
+        // Get main character name from transcript
+        const mainCharacterSegment = session.transcript.segments.find(
+          s => s.speaker.id === mainCharacterId
+        );
+        const mainCharacterName = mainCharacterSegment?.speaker.name || `Speaker ${mainCharacterId}`;
+
+        // Get user settings to find digital twin entry point
+        const entryPointId = await getDigitalTwinEntryPointId(userId, tenantId);
+        
+        if (!entryPointId) {
+          throw new HTTPException(400, {
+            message: "No personal wiki entry point configured. Please set a 'Digital Twin' entry point in the Wiki first.",
+          });
+        }
+
+        // Generate interview markdown
+        const interviewMarkdown = generateInterviewMarkdown(session);
+
+        // Process interview with personal wiki agent
+        const result = await processInterview({
+          entryPointId,
+          tenantId,
+          userId,
+          interviewMarkdown,
+          interviewName: session.name,
+          mainCharacterName,
+        });
+
+        // Update session metadata to mark as processed
+        await updateInterviewSession(id, tenantId, {
+          meta: {
+            wikiProcessed: true,
+            wikiProcessedAt: new Date().toISOString(),
+            wikiProcessedResult: {
+              processedFacts: result.processedFacts,
+              updatedCategories: result.updatedCategories,
+              newCategories: result.newCategories,
+            },
+          },
+        });
+
+        return c.json(result);
+      } catch (error) {
+        if (error instanceof HTTPException) {
+          throw error;
+        }
+        console.error("Error processing interview for wiki:", error);
+        throw new HTTPException(500, {
+          message: `Failed to process interview: ${(error as Error).message}`,
         });
       }
     }
