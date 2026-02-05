@@ -48,5 +48,15 @@
   "factsExtracted": "Informationen extrahiert",
   "updatedCategories": "Aktualisiert",
   "newCategories": "Neu erstellt",
-  "wikiDone": "Wiki"
+  "wikiDone": "Wiki",
+  "chatEmbedding": "Chat-Suche (Embedding)",
+  "embeddingActive": "Interview ist für Chat-Suche aktiviert",
+  "refreshEmbedding": "Aktualisieren",
+  "embeddedAt": "Erstellt am",
+  "embeddingNotActive": "Interview ist noch nicht für Chat-Suche aktiviert",
+  "createEmbedding": "Für Chat aktivieren",
+  "embeddingHint": "Ermöglicht semantische Suche im Chat über dieses Interview",
+  "embeddingSuccess": "Interview wurde für Chat-Suche aktiviert",
+  "embeddingError": "Fehler beim Erstellen des Embeddings",
+  "chatActive": "Chat"
 }

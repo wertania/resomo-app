@@ -88,6 +88,12 @@
                 >
                   📚 {{ $t('Archiv.wikiDone') || 'Wiki' }}
                 </span>
+                <span
+                  v-if="session.meta?.knowledgeEntryId"
+                  class="rounded-full bg-purple-100 px-2 py-0.5 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+                >
+                  🔍 {{ $t('Archiv.chatActive') || 'Chat' }}
+                </span>
               </div>
               <div
                 v-else-if="session.meta?.transcriptionStatus === 'pending' || session.meta?.transcriptionStatus === 'processing'"
@@ -287,6 +293,49 @@
             </div>
           </div>
 
+          <!-- Knowledge Embedding for Chat -->
+          <div class="mb-4">
+            <h4 class="mb-2 text-sm font-semibold text-surface-700 dark:text-surface-300">
+              {{ $t('Archiv.chatEmbedding') || 'Chat-Suche (Embedding)' }}
+            </h4>
+            <div v-if="editingSession.meta?.knowledgeEntryId" class="rounded-lg border border-purple-200 bg-purple-50 p-3 dark:border-purple-800 dark:bg-purple-900/20">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 text-sm text-purple-700 dark:text-purple-300">
+                  <span class="text-lg">🔍</span>
+                  <span>{{ $t('Archiv.embeddingActive') || 'Interview ist für Chat-Suche aktiviert' }}</span>
+                </div>
+                <Button
+                  :label="$t('Archiv.refreshEmbedding') || 'Aktualisieren'"
+                  size="small"
+                  severity="secondary"
+                  outlined
+                  :loading="isCreatingEmbedding"
+                  @click="handleCreateEmbedding"
+                />
+              </div>
+              <div v-if="editingSession.meta.knowledgeEmbeddedAt" class="mt-1 text-xs text-surface-500">
+                {{ $t('Archiv.embeddedAt') || 'Erstellt am' }}: {{ new Date(editingSession.meta.knowledgeEmbeddedAt).toLocaleString('de-DE') }}
+              </div>
+            </div>
+            <div v-else class="rounded-lg border border-surface-200 bg-surface-50 p-3 dark:border-surface-700 dark:bg-surface-800">
+              <div class="flex items-center justify-between">
+                <div class="text-sm text-surface-600 dark:text-surface-400">
+                  {{ $t('Archiv.embeddingNotActive') || 'Interview ist noch nicht für Chat-Suche aktiviert' }}
+                </div>
+                <Button
+                  :label="$t('Archiv.createEmbedding') || 'Für Chat aktivieren'"
+                  size="small"
+                  severity="help"
+                  :loading="isCreatingEmbedding"
+                  @click="handleCreateEmbedding"
+                />
+              </div>
+              <div class="mt-2 text-xs text-surface-500 dark:text-surface-400">
+                {{ $t('Archiv.embeddingHint') || 'Ermöglicht semantische Suche im Chat über dieses Interview' }}
+              </div>
+            </div>
+          </div>
+
           <h4 class="mb-2 text-sm font-semibold text-surface-700 dark:text-surface-300">
             {{ $t('Archiv.transcript') || 'Transcript' }}
             <span class="text-xs font-normal text-surface-400">({{ $t('Archiv.readOnly') || 'read-only' }})</span>
@@ -397,6 +446,10 @@ interface InterviewSession {
       updatedCategories: string[]
       newCategories: string[]
     }
+    // Knowledge embedding fields
+    knowledgeEntryId?: string
+    knowledgeEmbeddedAt?: string
+    knowledgeGroupId?: string
   }
   transcript?: {
     language: string
@@ -459,6 +512,7 @@ const uploadProgress = ref(0)
 const isSaving = ref(false)
 const isAnalyzing = ref(false)
 const isExtractingKnowledge = ref(false)
+const isCreatingEmbedding = ref(false)
 const refreshInterval = ref<number | null>(null)
 const actionsMenu = ref<any>(null)
 
@@ -902,6 +956,78 @@ const handleAnalyzeSpeakers = async () => {
     })
   } finally {
     isAnalyzing.value = false
+  }
+}
+
+const handleCreateEmbedding = async () => {
+  if (!editingSession.value || !tenantId.value) return
+
+  if (!editingSession.value.transcript) {
+    toast.add({
+      severity: 'warn',
+      summary: t('warning') || 'Warnung',
+      detail: t('Archiv.noTranscript') || 'Kein Transkript vorhanden',
+      life: 3000,
+    })
+    return
+  }
+
+  isCreatingEmbedding.value = true
+  try {
+    const result = await fetcher.post<{
+      success: boolean
+      knowledgeEntryId?: string
+      knowledgeGroupId?: string
+      error?: string
+    }>(
+      `/api/v1/tenant/${tenantId.value}/interview-sessions/${editingSession.value.id}/create-embedding`,
+      {}
+    )
+
+    if (result.success) {
+      // Update local state
+      const index = sessions.value.findIndex((s) => s.id === editingSession.value!.id)
+      if (index !== -1 && sessions.value[index]) {
+        const session = sessions.value[index]
+        if (!session.meta) {
+          session.meta = {}
+        }
+        session.meta.knowledgeEntryId = result.knowledgeEntryId
+        session.meta.knowledgeGroupId = result.knowledgeGroupId
+        session.meta.knowledgeEmbeddedAt = new Date().toISOString()
+      }
+      if (editingSession.value) {
+        if (!editingSession.value.meta) {
+          editingSession.value.meta = {}
+        }
+        editingSession.value.meta.knowledgeEntryId = result.knowledgeEntryId
+        editingSession.value.meta.knowledgeGroupId = result.knowledgeGroupId
+        editingSession.value.meta.knowledgeEmbeddedAt = new Date().toISOString()
+      }
+
+      toast.add({
+        severity: 'success',
+        summary: t('success') || 'Erfolg',
+        detail: t('Archiv.embeddingSuccess') || 'Interview wurde für Chat-Suche aktiviert',
+        life: 3000,
+      })
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: t('error') || 'Fehler',
+        detail: result.error || t('Archiv.embeddingError') || 'Fehler beim Erstellen des Embeddings',
+        life: 5000,
+      })
+    }
+  } catch (error: any) {
+    toast.add({
+      severity: 'error',
+      summary: t('error') || 'Fehler',
+      detail: error.message || (t('Archiv.embeddingError') || 'Fehler beim Erstellen des Embeddings'),
+      life: 5000,
+    })
+  } finally {
+    isCreatingEmbedding.value = false
   }
 }
 

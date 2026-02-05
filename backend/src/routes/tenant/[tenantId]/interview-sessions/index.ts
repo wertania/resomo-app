@@ -24,6 +24,10 @@ import { processInterview } from "../../../../lib/knowledge/personal-wiki-agent"
 import { getDigitalTwinEntryPointId } from "../../../../lib/user-settings";
 import { analyzeSpeakerTypes } from "../../../../lib/interview-sessions/speaker-type-analyzer";
 import {
+  createInterviewEmbedding,
+  removeInterviewEmbedding,
+} from "../../../../lib/interview-embedding";
+import {
   interviewSessionsSelectSchema,
   interviewSessionsUpdateSchema,
 } from "../../../../db/tables/interview-sessions";
@@ -670,6 +674,112 @@ export default function defineInterviewSessionsRoutes(
         console.error("Error processing interview for wiki:", error);
         throw new HTTPException(500, {
           message: `Failed to process interview: ${(error as Error).message}`,
+        });
+      }
+    }
+  );
+
+  /**
+   * POST /tenant/:tenantId/interview-sessions/:id/create-embedding
+   * Create a knowledge entry with vector embeddings from the interview transcript.
+   * This enables semantic/vector search over interview content in the chat.
+   */
+  app.post(
+    `${baseRoute}/:id/create-embedding`,
+    authAndSetUsersInfo,
+    checkUserPermission,
+    describeRoute({
+      tags: ["interview-sessions"],
+      summary: "Create knowledge embedding for interview",
+      description: "Creates a knowledge entry with vector embeddings from the interview transcript for semantic search in the character chat.",
+      responses: {
+        200: {
+          description: "Embedding creation result",
+          content: {
+            "application/json": {
+              schema: resolver(
+                v.object({
+                  success: v.boolean(),
+                  knowledgeEntryId: v.optional(v.string()),
+                  knowledgeGroupId: v.optional(v.string()),
+                  error: v.optional(v.string()),
+                })
+              ),
+            },
+          },
+        },
+      },
+    }),
+    validator("param", v.object({ tenantId: v.string(), id: v.string() })),
+    async (c) => {
+      try {
+        const { tenantId, id } = c.req.valid("param");
+        const userId = c.get("usersId");
+
+        const result = await createInterviewEmbedding(id, tenantId, userId);
+
+        if (!result.success) {
+          throw new HTTPException(400, {
+            message: result.error || "Failed to create embedding",
+          });
+        }
+
+        return c.json(result);
+      } catch (error) {
+        if (error instanceof HTTPException) {
+          throw error;
+        }
+        console.error("Error creating interview embedding:", error);
+        throw new HTTPException(500, {
+          message: `Failed to create embedding: ${(error as Error).message}`,
+        });
+      }
+    }
+  );
+
+  /**
+   * DELETE /tenant/:tenantId/interview-sessions/:id/embedding
+   * Remove the knowledge embedding for an interview
+   */
+  app.delete(
+    `${baseRoute}/:id/embedding`,
+    authAndSetUsersInfo,
+    checkUserPermission,
+    describeRoute({
+      tags: ["interview-sessions"],
+      summary: "Remove knowledge embedding for interview",
+      description: "Removes the knowledge entry and vector embeddings for this interview.",
+      responses: {
+        200: {
+          description: "Result",
+          content: {
+            "application/json": {
+              schema: resolver(
+                v.object({
+                  success: v.boolean(),
+                  error: v.optional(v.string()),
+                })
+              ),
+            },
+          },
+        },
+      },
+    }),
+    validator("param", v.object({ tenantId: v.string(), id: v.string() })),
+    async (c) => {
+      try {
+        const { tenantId, id } = c.req.valid("param");
+        const userId = c.get("usersId");
+
+        const result = await removeInterviewEmbedding(id, tenantId, userId);
+
+        return c.json(result);
+      } catch (error) {
+        if (error instanceof HTTPException) {
+          throw error;
+        }
+        throw new HTTPException(500, {
+          message: `Failed to remove embedding: ${(error as Error).message}`,
         });
       }
     }

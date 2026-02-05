@@ -8,4 +8,4 @@ export const STANDARD_AI_MODEL = mistral('mistral-large-latest');
 /**
  * Export all AI tools
  */
-// Example: export * from './tools/example';
+export * from './character-chat';

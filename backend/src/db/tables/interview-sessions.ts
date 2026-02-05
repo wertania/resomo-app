@@ -35,6 +35,10 @@ export type InterviewSessionMeta = {
     updatedCategories: string[];
     newCategories: string[];
   };
+  // Knowledge embedding fields
+  knowledgeEntryId?: string; // Reference to knowledge_entry for vector search
+  knowledgeEmbeddedAt?: string;
+  knowledgeGroupId?: string; // Reference to knowledge_group ("main-character")
 };
 
 export type InterviewSessionTranscript = {

@@ -48,5 +48,15 @@
   "factsExtracted": "facts extracted",
   "updatedCategories": "Updated",
   "newCategories": "Created",
-  "wikiDone": "Wiki"
+  "wikiDone": "Wiki",
+  "chatEmbedding": "Chat Search (Embedding)",
+  "embeddingActive": "Interview is enabled for chat search",
+  "refreshEmbedding": "Refresh",
+  "embeddedAt": "Created at",
+  "embeddingNotActive": "Interview is not yet enabled for chat search",
+  "createEmbedding": "Enable for Chat",
+  "embeddingHint": "Enables semantic search in chat over this interview",
+  "embeddingSuccess": "Interview has been enabled for chat search",
+  "embeddingError": "Failed to create embedding",
+  "chatActive": "Chat"
 }
