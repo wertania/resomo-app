@@ -8,6 +8,7 @@ import type {
   User,
 } from '@/types/usermanagement'
 import { nanoid } from 'nanoid'
+import { useSettingsStore } from './settings'
 
 interface UserState {
   isDarkMode: boolean
@@ -292,6 +293,9 @@ export const useUser = defineStore('user', () => {
 
     if (state.value.tenants.length > 0 && state.value.selectedTenant) {
       await getTeams()
+      // Load user settings for the selected tenant
+      const settingsStore = useSettingsStore()
+      await settingsStore.loadUserSettings()
     }
     state.value.loading = false
   }
