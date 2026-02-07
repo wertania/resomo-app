@@ -1,4 +1,5 @@
 import { Mistral } from "@mistralai/mistralai";
+import { log } from "../../../../framework/src";
 
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 
@@ -35,7 +36,11 @@ export async function transcribeAudio(
     model: "voxtral-mini-latest",
     file: audioFile,
     timestampGranularities: ["segment"],
+    diarize: true,
   });
+
+  log.info("Diarization response:");
+  log.info(response);
 
   const segments: TranscriptionSegment[] | undefined = response.segments?.map(
     (seg: { start?: number; end?: number; text?: string }) => ({
