@@ -124,6 +124,14 @@ const router = createRouter({
       ],
     },
 
+    // Test pages (standalone, no layout)
+    {
+      path: '/test/realtime-transcription',
+      name: 'TestRealtimeTranscription',
+      component: () => import('../views/test/realtime-transcription.vue'),
+      meta: { requiresAuth: false },
+    },
+
     // 404 (not found)
     {
       path: '/:pathMatch(.*)*',

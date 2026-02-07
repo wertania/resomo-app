@@ -49,6 +49,7 @@ export default defineConfig(({ mode }) => {
         '/api/v1': {
           target: env.VITE_DEV_API_URL,
           changeOrigin: true,
+          ws: true,
         },
         '/login.html': {
           target: env.VITE_DEV_API_URL,
