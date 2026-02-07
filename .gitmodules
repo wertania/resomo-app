@@ -1,6 +1,6 @@
 [submodule "backend/framework"]
 	path = backend/framework
-	url = https://github.com/symbiosika/kinaut_webserver
+	url = https://github.com/symbiosika/symbiosika-framework
 
 # pull again
 # git submodule update --init --recursive
